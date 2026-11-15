@@ -1,0 +1,1874 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="A working demo of the Customer Sentiment Tracker on a made-up painting company: escalations, the daily check, every job's score and conversations.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Crect x='1' y='1' width='24' height='24' rx='7' fill='%230072CE'/%3E%3Cpath d='M7.5 9h11M7.5 13h8M7.5 17h4.5' stroke='%23fff' stroke-width='2' stroke-linecap='round' fill='none'/%3E%3Ccircle cx='17' cy='17' r='2' fill='%23FAB219'/%3E%3C/svg%3E">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Customer Sentiment Tracker · Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Special+Gothic+Condensed+One&display=swap">
+<style>
+/* Layout: a blueprint header band (graph paper, corner brackets, two-colour condensed
+   headline) over a quiet working surface. One sticky 72px nav. Cards only where an object
+   needs setting apart. Light only, after the Avoca visual reference (brief, section 9). */
+:root{
+  color-scheme: light;
+  /* colour */
+  --ink:#0D1421; --ink-2:#3D5068; --muted:#7A94B0; --faint:#A8B9CB;
+  --accent:#0072CE; --accent-hi:#005EAB; --accent-soft:#EBF4FC; --accent-line:#CDE2F6;
+  --on-accent:#FFFFFF;
+  --page:#F5F7FA; --nav:#F1F5F9; --tray:#EDF2F8; --line:#E2EAF5; --card:#FFFFFF;
+  --track:#E9EFF6; --hover:#F7FAFD; --bracket:#9FB4CA;
+  --grid-major:rgba(0,114,206,.085); --grid-minor:rgba(0,114,206,.04); --page-clear:rgba(245,247,250,0);
+  /* status: marks use the validated steps; chips use a text and tint step of each */
+  --crit:#D03B3B; --crit-text:#AE2626; --crit-soft:#FCEEEE; --crit-line:#F2CACA;
+  --warn:#FAB219; --warn-text:#855200; --warn-soft:#FFF6DF; --warn-line:#F2D9A0;
+  --good:#0CA30C; --good-text:#006300; --good-soft:#EAF6EA; --good-line:#C2E4C2;
+  --tip-bg:#0D1421; --tip-fg:#FFFFFF;
+  /* type */
+  --display:"Special Gothic Condensed One","Arial Narrow","Roboto Condensed",sans-serif;
+  --sans:"Instrument Sans",Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  /* shape */
+  --shadow:0 1px 3px rgba(0,114,206,.07); --shadow-lift:0 12px 32px rgba(0,114,206,.12);
+  --max:1180px;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--page);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--nav)}
+a{color:var(--accent)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.i{width:16px;height:16px;flex:none;display:block}
+.wrap{max-width:calc(var(--max) + 64px);margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+@media (min-width:720px){.wrap{padding-left:max(32px,env(safe-area-inset-left,0px));padding-right:max(32px,env(safe-area-inset-right,0px))}}
+
+/* ---------- nav ---------- */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--nav);border-bottom:1px solid var(--line)}
+.nav-in{display:flex;align-items:center;gap:28px;min-height:72px}
+.brand{display:flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none;font-weight:700;font-size:13.5px;letter-spacing:.07em;text-transform:uppercase;white-space:nowrap}
+.brand svg{width:26px;height:26px;flex:none}
+.mk-bg{fill:var(--accent)} .mk-ln{stroke:var(--on-accent);stroke-width:2;stroke-linecap:round;fill:none} .mk-dot{fill:var(--warn)}
+.tabs{display:flex;align-items:stretch;gap:2px;align-self:stretch}
+.tabs a{display:flex;align-items:center;gap:8px;padding:0 12px;color:var(--ink);text-decoration:none;font-size:15px;font-weight:500;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tabs a:hover{color:var(--accent)}
+.tabs a[aria-current="page"]{color:var(--accent);border-bottom-color:var(--accent)}
+.tabs .n{min-width:20px;height:20px;padding:0 6px;border-radius:9999px;background:var(--crit-soft);color:var(--crit-text);font-size:12px;font-weight:600;display:inline-grid;place-items:center;line-height:1}
+.nav-r{margin-left:auto;display:flex;align-items:center;gap:12px}
+.ws{display:inline-flex;align-items:center;gap:8px;padding:4px 12px 4px 10px;border:1px solid var(--line);background:var(--card);border-radius:9999px;font-size:13px;color:var(--ink-2);white-space:nowrap}
+.ws i{width:8px;height:8px;border-radius:50%;background:var(--warn)}
+.tabs .n.w{background:var(--warn-soft);color:var(--warn-text)}
+@media (max-width:1020px){
+  .nav-in{flex-wrap:wrap;gap:0 16px;min-height:0;padding-top:12px}
+  .tabs{order:3;width:100%;overflow-x:auto;scrollbar-width:none;margin-top:4px;height:46px}
+  .tabs::-webkit-scrollbar{display:none}
+  .tabs a{padding:0 10px}
+  .ws{display:none}
+}
+
+/* ---------- blueprint header band ---------- */
+.hero{position:relative;border-bottom:1px solid var(--line);background-color:var(--page);
+  background-image:linear-gradient(var(--grid-major) 1px,transparent 1px),linear-gradient(90deg,var(--grid-major) 1px,transparent 1px),linear-gradient(var(--grid-minor) 1px,transparent 1px),linear-gradient(90deg,var(--grid-minor) 1px,transparent 1px);
+  background-size:96px 96px,96px 96px,24px 24px,24px 24px;background-position:center top}
+.hero::after{content:"";position:absolute;inset:auto 0 0;height:42%;background:linear-gradient(var(--page-clear),var(--page));pointer-events:none}
+.frame{position:absolute;top:14px;bottom:14px;left:max(14px,env(safe-area-inset-left,0px));right:max(14px,env(safe-area-inset-right,0px));pointer-events:none;z-index:1;--b:var(--bracket);
+  background:
+   linear-gradient(var(--b),var(--b)) left top/12px 1px no-repeat,linear-gradient(var(--b),var(--b)) left top/1px 12px no-repeat,
+   linear-gradient(var(--b),var(--b)) right top/12px 1px no-repeat,linear-gradient(var(--b),var(--b)) right top/1px 12px no-repeat,
+   linear-gradient(var(--b),var(--b)) left bottom/12px 1px no-repeat,linear-gradient(var(--b),var(--b)) left bottom/1px 12px no-repeat,
+   linear-gradient(var(--b),var(--b)) right bottom/12px 1px no-repeat,linear-gradient(var(--b),var(--b)) right bottom/1px 12px no-repeat}
+.hero>.wrap{position:relative;z-index:2;padding-block:48px 44px}
+.hero.compact>.wrap{padding-block:36px 34px}
+.hero-grid{display:grid;gap:32px;align-items:center}
+@media (min-width:1000px){.hero-grid.split{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:56px}}
+.hero-copy{min-width:0}
+.eyebrow{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin:0}
+.eyebrow a{color:var(--accent);text-decoration:none}
+.eyebrow a:hover{text-decoration:underline}
+.eyebrow .sep{color:var(--faint)}
+.eyebrow .pill{text-transform:none;letter-spacing:0}
+h1.display{font-family:var(--display);font-weight:400;text-transform:uppercase;font-size:clamp(40px,5.4vw,62px);line-height:.96;letter-spacing:-.012em;margin:14px 0 0;color:var(--ink);text-wrap:balance}
+h1.display .l2{display:block;color:var(--accent)}
+.hero.compact h1.display{font-size:clamp(36px,4.6vw,54px)}
+.lede{font-size:17px;line-height:28px;color:var(--ink-2);max-width:58ch;margin:16px 0 0}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}
+.hero-pills{display:flex;align-items:center;gap:8px 10px;flex-wrap:wrap;margin-top:16px}
+.hero-note{font-size:14px;color:var(--ink-2)}
+
+/* ---------- buttons, pills, chips ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:8px 18px;border-radius:4px;border:1px solid transparent;background:none;font-size:15px;font-weight:500;line-height:22px;text-decoration:none;cursor:pointer;white-space:nowrap}
+.btn-primary{background:var(--accent);color:var(--on-accent)}
+.btn-primary:hover{background:var(--accent-hi)}
+.btn-line{background:var(--card);border-color:var(--line);color:var(--ink)}
+.btn-line:hover{border-color:var(--faint)}
+.btn-bracket{color:var(--ink);--b:var(--bracket);
+  background:
+   linear-gradient(var(--b),var(--b)) left top/8px 1px no-repeat,linear-gradient(var(--b),var(--b)) left top/1px 8px no-repeat,
+   linear-gradient(var(--b),var(--b)) right top/8px 1px no-repeat,linear-gradient(var(--b),var(--b)) right top/1px 8px no-repeat,
+   linear-gradient(var(--b),var(--b)) left bottom/8px 1px no-repeat,linear-gradient(var(--b),var(--b)) left bottom/1px 8px no-repeat,
+   linear-gradient(var(--b),var(--b)) right bottom/8px 1px no-repeat,linear-gradient(var(--b),var(--b)) right bottom/1px 8px no-repeat}
+.btn-bracket:hover{--b:var(--accent);color:var(--accent)}
+.btn-sm{padding:5px 13px;font-size:14px;line-height:20px}
+.btn:disabled{opacity:.5;cursor:default}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:1px 9px;border-radius:9999px;border:1px solid transparent;background:var(--nav);color:var(--ink-2);font-size:12px;font-weight:500;line-height:20px;white-space:nowrap}
+.pill .i{width:12px;height:12px}
+.p-crit{background:var(--crit-soft);border-color:var(--crit-line);color:var(--crit-text)}
+.p-warn{background:var(--warn-soft);border-color:var(--warn-line);color:var(--warn-text)}
+.p-good{background:var(--good-soft);border-color:var(--good-line);color:var(--good-text)}
+.p-accent{background:var(--accent-soft);border-color:var(--accent-line);color:var(--accent)}
+.tag{font-size:11.5px;line-height:18px;padding:0 8px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border:1px solid var(--line);background:var(--card);border-radius:6px;font-size:14px;color:var(--ink-2);cursor:pointer;line-height:20px}
+.chip b{font-weight:600;color:var(--ink)}
+.chip:hover{border-color:var(--faint)}
+.chip[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.chip[aria-pressed="true"] b{color:var(--accent)}
+
+/* ---------- surfaces ---------- */
+.body{padding-block:28px 64px;display:grid;gap:20px}
+.grid{display:grid;gap:20px}
+@media (min-width:1000px){.g-7-5{grid-template-columns:minmax(0,7fr) minmax(0,5fr);align-items:start}}
+.stack{display:grid;gap:20px;min-width:0;align-content:start}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);min-width:0}
+.card-h{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--line)}
+.card-h .i{width:18px;height:18px;color:var(--accent)}
+.card-h h2{margin:0;font-size:16px;font-weight:600;line-height:1.3}
+.card-h .aside{margin-left:auto;font-size:13px;color:var(--muted);white-space:nowrap}
+.card-b{padding:16px 20px 20px}
+.card-f{padding:0 20px 18px;display:flex;gap:12px;flex-wrap:wrap}
+.empty{color:var(--ink-2);margin:0}
+.pad{padding:20px}
+.lbl{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:20px 0 8px}
+.note-bar{font-size:14px;color:var(--warn-text);background:var(--warn-soft);border:1px solid var(--warn-line);border-radius:10px;padding:10px 14px;margin:0}
+
+/* KPI tray: the Avoca dashboard-tile pattern */
+.tray{background:var(--tray);border:1px solid var(--line);border-radius:20px;padding:10px;min-width:0}
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.kpi{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px 14px;text-decoration:none;color:var(--ink);min-width:0}
+.kpi:hover{border-color:var(--accent-line);box-shadow:var(--shadow)}
+.kpi .v{font-size:30px;font-weight:600;line-height:36px;color:var(--accent);letter-spacing:-.01em}
+.kpi .v small{font-size:15px;font-weight:500;color:var(--muted);margin-left:5px;letter-spacing:0}
+.kpi .l{font-size:14px;color:var(--ink);margin-top:2px}
+.kpi .c{font-size:12.5px;color:var(--muted)}
+.rail{display:flex;gap:2px;height:4px;margin-top:12px;border-radius:9999px;background:var(--track);overflow:hidden}
+.rail i{display:block;height:100%;border-radius:9999px}
+@media (max-width:420px){.kpi{padding:14px 14px 12px}.kpi .v{font-size:26px}}
+
+/* flagged list (overview) */
+.flags{display:grid;gap:8px}
+.flag{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 12px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:10px;text-decoration:none;color:var(--ink);background:var(--card)}
+.flag:hover{border-color:var(--accent-line);background:var(--hover)}
+.flag .who{font-weight:600;font-size:14.5px;min-width:0}
+.flag .who span{font-weight:400;color:var(--ink-2)}
+.flag .age{font-size:12.5px;color:var(--muted);white-space:nowrap}
+.flag .q{grid-column:2/-1;font-size:14px;color:var(--ink-2)}
+@media (max-width:520px){.flag{grid-template-columns:auto minmax(0,1fr)}.flag .age{grid-column:2}.flag .q{grid-column:1/-1}}
+
+/* jobs by score */
+.seg{display:flex;gap:2px;height:8px}
+.seg i{display:block;border-radius:9999px;min-width:8px}
+.legend{display:flex;gap:8px 18px;flex-wrap:wrap;margin:12px 0 6px;font-size:13px;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.legend b{color:var(--ink);font-weight:600}
+.jrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(64px,120px) 34px;gap:14px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink)}
+.jrow:last-child{border-bottom:0}
+.jrow:hover .nm{color:var(--accent)}
+.jn{display:grid;min-width:0}
+.nm{font-weight:600;font-size:14.5px}
+.sub{font-size:13px;color:var(--muted)}
+.meter{display:block;height:6px;border-radius:9999px;background:var(--track);overflow:hidden}
+.meter i{display:block;height:100%;border-radius:9999px}
+.meter.big{height:8px;margin-top:14px}
+.score-n{font-weight:600;font-size:15px;text-align:right}
+
+/* waiting on a reply */
+.wrow{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:4px 14px;align-items:start;padding:13px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink)}
+.wrow:last-child{border-bottom:0}
+.wrow:hover .nm{color:var(--accent)}
+.ch-ic{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent)}
+.wrow .msg{display:block;color:var(--ink-2);font-size:14px;margin-top:2px}
+@media (max-width:520px){.wrow{grid-template-columns:34px minmax(0,1fr)}.wrow>.pill{grid-column:2;justify-self:start}}
+
+/* escalations */
+.tools{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.esc-list{display:grid;gap:14px}
+.esc{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:18px 20px;display:grid;gap:12px;min-width:0}
+.esc-top{display:flex;align-items:center;gap:8px 10px;flex-wrap:wrap}
+.esc-id{font-size:13px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+.esc-time{margin-left:auto;font-size:13px;color:var(--muted)}
+.esc-who{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px}
+.esc-who a{font-size:18px;font-weight:600;color:var(--ink);text-decoration:none}
+.esc-who a:hover{color:var(--accent)}
+.esc-who span{color:var(--ink-2);font-size:14.5px}
+.cats{display:flex;gap:6px;flex-wrap:wrap}
+.quote{margin:0;border-left:2px solid var(--accent);padding:3px 0 3px 14px;font-size:15.5px;line-height:1.5;color:var(--ink)}
+.quote cite{display:block;font-style:normal;font-size:13px;color:var(--muted);margin-top:4px}
+.note{display:grid;gap:6px}
+.note label{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.note textarea{width:100%;min-height:44px;resize:vertical;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:14px;line-height:1.45;background:var(--card);color:var(--ink)}
+.note textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.saved{font-size:12px;color:var(--muted);min-height:16px}
+.note-ro{margin:0;font-size:14px;color:var(--ink-2);background:var(--hover);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.note-ro span{display:block;font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.esc-bottom{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:12px}
+.esc-state{font-size:13.5px;color:var(--ink-2);margin-right:auto}
+.hist{margin:0;padding:0;list-style:none;display:grid;gap:3px;font-size:12.5px;color:var(--muted)}
+.hist li span{color:var(--ink-2);font-variant-numeric:tabular-nums}
+/* where an escalation is: flagged, texted, picked up, resolved */
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+.steps li{position:relative;padding:20px 10px 0 0;min-width:0;font-size:12.5px;line-height:1.35;color:var(--muted)}
+.steps li::before{content:"";position:absolute;left:6px;right:-6px;top:5px;height:2px;background:var(--track)}
+.steps li:last-child::before{display:none}
+.steps li::after{content:"";position:absolute;left:0;top:0;width:12px;height:12px;border-radius:50%;box-sizing:border-box;background:var(--card);border:2px solid var(--faint)}
+.steps li.done::before{background:var(--accent)}
+.steps li.done::after{background:var(--accent);border-color:var(--accent);box-shadow:0 0 0 2px var(--card)}
+.steps li.cur::after{border-color:var(--warn);background:var(--warn-soft);box-shadow:0 0 0 2px var(--card)}
+.steps b{display:block;font-size:13px;font-weight:600;color:var(--ink)}
+.steps li:not(.done):not(.cur) b{color:var(--muted);font-weight:500}
+.steps span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.steps li.cur span{color:var(--warn-text)}
+
+/* daily check: the 4 PM list, the 5 PM roll-up */
+.ck-bar{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:10px;padding:12px 16px;font-size:14px;line-height:1.45;color:var(--ink-2)}
+.ck-lead{margin:0 0 12px;font-size:14px;line-height:1.5;color:var(--ink-2)}
+.ckrow .sub{display:block;margin-top:2px}
+.nw{white-space:nowrap}
+.ck-bar.crit{border-left-color:var(--crit)}
+.ck-bar>.i{color:var(--muted)}
+.ck-bar b{color:var(--ink);font-weight:600}
+.ck-bar>span{flex:1 1 300px}
+.tl{list-style:none;margin:0;padding:0}
+.tl>li{display:grid;grid-template-columns:112px minmax(0,1fr);gap:6px 20px;padding:18px 0;border-top:1px solid var(--line)}
+.tl>li:first-child{border-top:0;padding-top:2px}
+.tl>li:last-child{padding-bottom:2px}
+.tl .t{font-family:var(--display);font-size:24px;line-height:1;text-transform:uppercase;color:var(--ink);letter-spacing:.01em}
+.tl .t small{display:block;margin-top:7px;font-family:var(--sans);font-size:12.5px;line-height:1.3;text-transform:none;letter-spacing:0;color:var(--muted)}
+.tl li.later .t{color:var(--muted)}
+.tl li.now .t{color:var(--accent)}
+.tl h3{margin:0;font-size:15.5px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:8px 10px;flex-wrap:wrap}
+.tl p{margin:5px 0 0;color:var(--ink-2);font-size:14px;line-height:1.5}
+.bubbles{display:grid;gap:10px;margin-top:12px}
+.bubble{max-width:560px;background:var(--tray);border:1px solid var(--line);border-radius:14px 14px 14px 4px;padding:10px 14px 11px;font-size:14px;line-height:1.5;color:var(--ink)}
+.bubble.preview{background:var(--card);border-style:dashed;border-color:var(--bracket)}
+.bubble .to{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-bottom:3px}
+.bubble .to .i{width:13px;height:13px}
+.bubble p{margin:0;color:var(--ink);font-size:14px}
+.bubble ul{margin:4px 0;padding-left:18px}
+.bubble li{margin:2px 0}
+.drops{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:6px}
+.drops li{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink-2)}
+.drops .i{color:var(--good)}
+.rules{margin:0;padding:0;list-style:none;display:grid;gap:12px}
+.rules li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:10px;font-size:14px;color:var(--ink-2);line-height:1.5}
+.rules .i{color:var(--accent);margin-top:2px}
+.rules b{color:var(--ink);font-weight:600}
+.ckrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:11px 0;border-top:1px solid var(--line);text-decoration:none;color:inherit}
+.ckrow:first-child{border-top:0;padding-top:0}
+.ckrow .nm{display:block}
+.ckrow:hover .nm{color:var(--accent)}
+/* phones: who still needs reaching comes first; wide screens: the day's steps on the left */
+.ck-grid{display:grid;gap:20px;align-items:start}
+@media (min-width:1000px){.ck-grid{grid-template-columns:minmax(0,7fr) minmax(0,5fr);grid-template-areas:"s w" "s r"}.ck-s{grid-area:s}.ck-w{grid-area:w}.ck-r{grid-area:r}}
+@media (max-width:560px){.tl>li{grid-template-columns:minmax(0,1fr)}.tl .t{font-size:21px}.tl .t small{display:inline;margin-left:8px}}
+
+/* jobs table */
+.search{position:relative;flex:1 1 220px;max-width:340px}
+.search .i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.search input{width:100%;padding:8px 12px 8px 36px;border:1px solid var(--line);border-radius:8px;background:var(--card);font-size:14.5px;color:var(--ink)}
+.sort{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink-2)}
+.select,.text{padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);font-size:14.5px;color:var(--ink)}
+.search input:focus,.select:focus,.text:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.tbl-wrap{overflow-x:auto}
+table.jobs{width:100%;border-collapse:collapse;font-size:14px}
+.jobs th{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);text-align:left;padding:13px 16px;border-bottom:1px solid var(--line);white-space:nowrap}
+.jobs td{padding:13px 16px;border-bottom:1px solid var(--line);vertical-align:middle}
+.jobs tbody tr{cursor:pointer}
+.jobs tbody tr:hover td{background:var(--hover)}
+.jobs tbody tr:last-child td{border-bottom:0}
+.jobs td.nm a{font-weight:600;color:var(--ink);text-decoration:none;font-size:14.5px}
+.jobs td.nm a:hover{color:var(--accent)}
+.jobs .sub{display:block;font-weight:400}
+.scell{display:grid;grid-template-columns:28px 88px;gap:10px;align-items:center}
+.scell b{font-weight:600;text-align:right}
+.trend{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;font-weight:500}
+.trend.dn{color:var(--crit-text)} .trend.up{color:var(--good-text)} .trend.fl{color:var(--muted)}
+.lc{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;color:var(--ink-2)}
+.lc .i{color:var(--muted)}
+.dash{color:var(--faint)}
+.none{padding:22px 20px;color:var(--ink-2);margin:0}
+@media (max-width:760px){
+  table.jobs thead{display:none}
+  table.jobs,.jobs tbody,.jobs tr,.jobs td{display:block}
+  .jobs tbody tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 14px;padding:14px 16px;border-bottom:1px solid var(--line)}
+  .jobs tbody tr:last-child{border-bottom:0}
+  .jobs td{padding:0;border:0}
+  .jobs tbody tr:hover td{background:none}
+  .jobs td[data-label]::before{content:attr(data-label);display:block;font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+  .jobs td.nm{grid-column:1/-1}
+  .scell{grid-template-columns:24px minmax(0,1fr)}
+}
+
+/* job detail */
+.detail{display:grid;gap:20px}
+@media (min-width:1000px){.detail{grid-template-columns:minmax(0,7fr) minmax(0,5fr);grid-template-areas:"a s" "t s";align-items:start}.d-a{grid-area:a}.d-s{grid-area:s}.d-t{grid-area:t}}
+.recog{padding:14px}
+.recog-top{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--accent-line);border-radius:10px;background:var(--card);flex-wrap:wrap}
+.ring{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--accent);color:var(--accent);display:grid;place-items:center;flex:none}
+.rt{display:grid;min-width:0}
+.rt .nm{font-size:16px}
+.recog-top .right{margin-left:auto}
+.kvs{padding:4px 6px 0}
+.kv{display:grid;grid-template-columns:132px minmax(0,1fr) auto;gap:2px 14px;align-items:baseline;padding:11px 0;border-bottom:1px solid var(--line)}
+.kv:last-child{border-bottom:0;padding-bottom:4px}
+.kv .k{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.kv .v{font-size:14.5px;color:var(--ink);min-width:0}
+.kv .r{font-size:13px;color:var(--muted);text-align:right}
+@media (max-width:560px){.kv{grid-template-columns:minmax(0,1fr) auto}.kv .k{grid-column:1/-1}}
+.score-head{display:flex;align-items:flex-end;gap:10px 16px;flex-wrap:wrap}
+.score-big{font-size:56px;font-weight:600;line-height:.95;letter-spacing:-.02em;color:var(--ink)}
+.score-big small{font-size:20px;color:var(--muted);font-weight:500;margin-left:3px;letter-spacing:0}
+.score-meta{display:grid;gap:6px;justify-items:start;padding-bottom:3px}
+.chart{position:relative;margin:18px 0 0}
+.plot{position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.ylab{position:absolute;right:0;transform:translateY(-50%);font-size:11.5px;line-height:1;color:var(--muted);font-variant-numeric:tabular-nums}
+.xlabs{position:relative;height:16px;margin-top:6px;font-size:11.5px;line-height:16px;color:var(--muted)}
+.xlabs span{position:absolute;top:0;white-space:nowrap}
+.xlabs .mid{transform:translateX(-50%)}
+.sp-area{fill:var(--accent);fill-opacity:.1}
+.sp-line{fill:none;stroke:var(--accent);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.sp-grid{stroke:var(--line);stroke-width:1}
+.sp-axis{stroke:var(--faint);stroke-width:1}
+.sp-lab{fill:var(--muted);font-size:11px;font-family:var(--sans)}
+.sp-dot{stroke:var(--card);stroke-width:2}
+.sp-end{fill:var(--accent);stroke:var(--card);stroke-width:2}
+.sp-hit{fill:transparent;cursor:pointer;outline:none}
+.sp-hit:focus-visible{stroke:var(--accent);stroke-width:2}
+.chart-cap{display:flex;gap:16px;flex-wrap:wrap;margin:8px 0 0;font-size:12.5px;color:var(--muted)}
+.chart-cap span{display:inline-flex;align-items:center;gap:7px}
+.k-line{width:16px;height:2px;border-radius:2px;background:var(--accent);display:inline-block}
+.k-dot{width:9px;height:9px;border-radius:50%;background:var(--ink-2);display:inline-block}
+.tip{position:absolute;z-index:3;pointer-events:none;background:var(--tip-bg);color:var(--tip-fg);font-size:12.5px;line-height:1.4;padding:6px 9px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-100%)}
+.rubric{margin:0;padding:0;list-style:none}
+.rubric li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:11px 0 12px;border-bottom:1px solid var(--line)}
+.rubric li:first-child{padding-top:2px}
+.rubric .rn{font-size:14px;color:var(--ink)}
+.rubric .rv{font-size:13px;font-weight:600;color:var(--ink)}
+.rubric .rw{grid-column:1/-1;font-size:12.5px;color:var(--muted);margin-top:-2px}
+.rubric .u{grid-column:1/-1;height:4px;border-radius:9999px;background:var(--track);overflow:hidden}
+.rubric .u i{display:block;height:100%;border-radius:9999px}
+.behind{display:grid;gap:12px}
+.lb{display:block;width:100%;text-align:left;border:0;background:none;padding:1px 0 1px 12px;border-left:2px solid var(--accent);cursor:pointer;font-size:14px;line-height:1.5;color:var(--ink)}
+.lb:hover{color:var(--accent)}
+.lb small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+.how{font-size:13px;color:var(--muted);margin:18px 0 0;line-height:1.5}
+.sec-title{display:flex;align-items:baseline;gap:10px;margin:0 0 4px;font-size:22px;font-weight:600;letter-spacing:-.01em}
+.sec-title span{font-size:14px;font-weight:500;color:var(--muted)}
+.tl-group{display:grid;gap:10px;margin-top:18px}
+.tl-day{display:flex;align-items:center;gap:12px;margin:0;font-size:12px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.tl-day::after{content:"";flex:1;height:1px;background:var(--line)}
+.ixc{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;scroll-margin-top:150px;transition:border-color .3s,box-shadow .3s}
+.ixc.out{background:var(--hover);box-shadow:none}
+.ixc.flash{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.ixc-h{display:flex;align-items:center;gap:6px 10px;padding:12px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.ixc-h .ic{color:var(--accent);display:grid}
+.ixc-h .t1{font-weight:600;font-size:14.5px}
+.ixc-h .t2{font-size:13px;color:var(--muted);min-width:0}
+.ixc-h .sc{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);flex-wrap:wrap;justify-content:flex-end}
+.ixc-s{margin:0;padding:11px 16px 0;font-size:14px;color:var(--ink-2)}
+.lines{padding:8px 10px 12px}
+.ln{display:grid;grid-template-columns:64px minmax(0,1fr);gap:10px;padding:6px 8px;border-left:2px solid transparent;font-size:14px;line-height:1.5}
+.ln.c-call{grid-template-columns:34px 64px minmax(0,1fr)}
+.ln.c-text{grid-template-columns:66px 64px minmax(0,1fr)}
+.ln .tt{color:var(--muted);font-variant-numeric:tabular-nums}
+.ln .who{color:var(--muted);font-weight:500}
+.ln .who.us{color:var(--accent)}
+.ln .x{color:var(--ink-2);min-width:0}
+.ln.fl{border-left-color:var(--accent);background:var(--accent-soft)}
+.ln.fl .x{color:var(--ink)}
+.ln .tags{display:inline-flex;gap:4px;margin-left:8px;flex-wrap:wrap;vertical-align:1px}
+.ixc-f{display:flex;gap:6px;flex-wrap:wrap;padding:0 16px 14px}
+@media (max-width:560px){
+  .ln,.ln.c-call,.ln.c-text{grid-template-columns:auto minmax(0,1fr);gap:0 8px}
+  .ln .x{grid-column:1/-1}
+  .ln:not(.c-call):not(.c-text) .who{grid-column:1/-1}
+  .ixc-h .sc{margin-left:0;justify-content:flex-start;width:100%}
+}
+
+/* settings */
+.conn{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:2px 14px;align-items:center;padding:13px 0;border-bottom:1px solid var(--line)}
+.conn:last-child{border-bottom:0}
+.conn .pills{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+@media (max-width:520px){.conn{grid-template-columns:34px minmax(0,1fr)}.conn .pills{grid-column:2;justify-content:flex-start}}
+.field{display:grid;gap:10px;padding:14px 0;border-bottom:1px solid var(--line)}
+.field:first-child{padding-top:2px}
+.field:last-child{border-bottom:0;padding-bottom:0}
+.field-t{margin:0;font-size:14.5px;font-weight:600;color:var(--ink)}
+.checks{display:flex;gap:10px 22px;flex-wrap:wrap}
+.check{display:inline-flex;align-items:center;gap:9px;font-size:14.5px;color:var(--ink);cursor:pointer}
+.check input{width:16px;height:16px;margin:0;accent-color:var(--accent)}
+.inline{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:14.5px;color:var(--ink-2)}
+.inline .text{flex:1 1 220px;min-width:0}
+.hint{font-size:13px;color:var(--muted);margin:0}
+.team{width:100%;border-collapse:collapse;font-size:14px}
+.team th{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);text-align:left;padding:0 10px 10px 0;border-bottom:1px solid var(--line)}
+.team td{padding:11px 10px 11px 0;border-bottom:1px solid var(--line);vertical-align:middle}
+.team tr:last-child td{border-bottom:0}
+.team .select{width:100%;max-width:240px}
+@media (max-width:560px){
+  .team thead{display:none}
+  .team tr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;padding:11px 0;border-bottom:1px solid var(--line)}
+  .team tr:last-child{border-bottom:0}
+  .team td{padding:0;border:0}
+  .team td:nth-child(2){color:var(--muted);font-size:13px;text-align:right}
+  .team td:last-child{grid-column:1/-1}
+  .team .select{max-width:none}
+}
+.bands{display:grid;gap:0}
+.band-row{display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}
+.band-row:last-child{border-bottom:0}
+.band-row i{width:12px;height:12px;border-radius:4px}
+.digest{display:grid;gap:8px;font-size:14px;color:var(--ink-2);background:var(--tray);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:0}
+.digest p{margin:0}
+.digest b{color:var(--ink);font-weight:600}
+
+/* gate, loading */
+.gate{display:grid;place-items:center;padding-block:80px 110px}
+.gate-col{width:min(352px,100%);text-align:center}
+.gate-col svg{width:44px;height:44px;margin:0 auto;display:block}
+.gate-col h1{font-size:28px;font-weight:600;letter-spacing:-.01em;margin:16px 0 8px}
+.gate-col p{margin:0 0 10px;color:var(--ink-2)}
+.skel{background:var(--tray);border:1px solid var(--line);border-radius:16px;min-height:220px}
+
+.foot{border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+.foot .wrap{padding-block:18px calc(18px + env(safe-area-inset-bottom,0px));display:flex;gap:6px 22px;flex-wrap:wrap}
+.toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--tip-bg);color:var(--tip-fg);padding:10px 16px;border-radius:8px;font-size:14px;z-index:20;box-shadow:var(--shadow-lift);max-width:calc(100% - 32px)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+</style>
+<script>window.__SEED={"jobs":[{"id":"J-2041","customer":{"name":"Dana Fairbanks","first":"Dana","phone":"(614) 555-0142","email":"dana.w@example.com","since":2024,"jobs":2,"lifetime":9400,"note":"Repeat customer"},"title":"Interior repaint","scope":"Living room, dining room, 2 bedrooms, hallway","value":6850,"stage":"In progress","stageNote":"Day 2 of 4, one day lost","pm":"Marisol R.","crew":"Crew B · Andre","interactions":[{"id":"i1","at":"2026-11-02T11:05","ch":"email","dir":"in","by":"Dana","summary":"Asked to confirm the Nov 11 start. She is taking days off work for it.","lines":[{"t":"","s":"c","x":"Hi Marisol, just confirming you're still starting Wednesday the 11th."},{"t":"","s":"c","x":"I'm taking those days off work so I need to know for sure."}],"score":72,"tone":"Neutral","tags":["Scheduling"],"urgency":"low","needsReply":true,"subj":"Start date"},{"id":"i2","at":"2026-11-02T13:40","ch":"email","dir":"out","by":"Marisol","summary":"Confirmed Crew B starts Nov 11 at 8 AM, four working days.","lines":[{"t":"","s":"Marisol","x":"Yes, Andre's crew starts Wednesday the 11th at 8 AM. Four working days, so we should wrap Monday the 16th."},{"t":"","s":"Marisol","x":"We'll move furniture to the middle of each room and cover everything."}],"subj":"Re: Start date"},{"id":"i3","at":"2026-11-11T17:20","ch":"text","dir":"in","by":"Dana","summary":"Happy with day one and the dining room color.","lines":[{"t":"5:20 PM","s":"c","x":"day 1 looks great!! the agreeable gray is perfect in the dining room","f":["Praise"]}],"score":94,"tone":"Warm","tags":["Praise"],"urgency":"low","needsReply":false},{"id":"i4","at":"2026-11-12T09:41","ch":"text","dir":"in","by":"Dana","summary":"Crew not on site at 9:41. She stayed home for it.","lines":[{"t":"9:41 AM","s":"c","x":"Hi, is the crew coming today? Nobody's here yet and I stayed home for this","f":["Crew late"]}],"score":45,"tone":"Concerned","tags":["Crew late"],"urgency":"medium","needsReply":true},{"id":"i5","at":"2026-11-12T11:58","ch":"text","dir":"in","by":"Dana","summary":"Second text with no reply to the first. Still no crew.","lines":[{"t":"11:58 AM","s":"c","x":"Still nobody. Can someone please call me back","f":["Unanswered"]}],"score":26,"tone":"Frustrated","tags":["Crew no-show","Unanswered"],"urgency":"high","needsReply":true},{"id":"i6","at":"2026-11-12T14:15","ch":"call","dir":"in","by":"Tasha","summary":"Called the office after two unanswered texts. Crew B had been pulled to another job. Tasha promised a callback from Marisol.","lines":[{"t":"0:04","s":"Tasha","x":"Thanks for calling, this is Tasha."},{"t":"0:07","s":"c","x":"Hi, it's Dana Fairbanks. I've texted twice today. Nobody came and nobody called.","f":["Unanswered"]},{"t":"0:19","s":"Tasha","x":"I'm sorry. Let me look at the board. It looks like Andre's crew got pulled to finish another job this morning."},{"t":"0:31","s":"c","x":"So I took a day off work for nothing.","f":["Lost workday"]},{"t":"0:38","s":"Tasha","x":"I'll have Marisol call you this afternoon with a plan."},{"t":"0:45","s":"c","x":"Okay. Please make sure she actually does."}],"score":30,"tone":"Frustrated","tags":["Crew no-show","Unanswered","Lost workday"],"urgency":"high","dur":228},{"id":"i7","at":"2026-11-13T08:47","ch":"text","dir":"in","by":"Dana","summary":"Crew arrived Friday. Nobody from the office called back on Thursday.","lines":[{"t":"8:47 AM","s":"c","x":"Crew is here today, thank you. But nobody from the office ever called me back yesterday.","f":["Unanswered"]}],"score":40,"tone":"Frustrated","tags":["Unanswered"],"urgency":"medium","needsReply":true},{"id":"i8","at":"2026-11-13T15:52","ch":"text","dir":"in","by":"Dana","summary":"Crew packing up with the hallway not started. Says she will leave a review if the job is not done Monday.","lines":[{"t":"3:52 PM","s":"c","x":"They're packing up and the hallway isn't even started."},{"t":"3:52 PM","s":"c","x":"If this isn't finished Monday like I was promised I'm leaving a review. I already lost a day of work over this.","f":["Mentions review"]}],"score":12,"tone":"Angry","tags":["Schedule slip","Mentions review","Lost workday"],"urgency":"high","review":"negative","needsReply":true}],"days":["2026-11-11","2026-11-12","2026-11-13","2026-11-16"]},{"id":"J-2029","customer":{"name":"Tom Okafor","first":"Tom","phone":"(614) 555-0177","email":"tokafor@example.com","since":2026,"jobs":1,"lifetime":3900,"note":"New customer"},"title":"Interior repaint","scope":"Primary bedroom, bathroom, walk-in closet","value":3900,"stage":"Invoiced","stageNote":"$1,950 balance due","pm":"Wendell T.","crew":"Crew A · Emil","interactions":[{"id":"i1","at":"2026-11-06T16:15","ch":"text","dir":"out","by":"Emil","summary":"Crew finished. Wendell to reach out about a walkthrough.","lines":[{"t":"4:15 PM","s":"Emil","x":"All done Tom. Wendell will reach out to set up a walkthrough."}]},{"id":"i2","at":"2026-11-09T18:12","ch":"email","dir":"in","by":"Tom","summary":"Found paint spatter on the new white oak floor in the closet. Asked for someone to look.","lines":[{"t":"","s":"c","x":"Wendell, after the crew finished I found white paint spatter on the closet floor.","f":["Damage"]},{"t":"","s":"c","x":"It's new white oak we had installed in September. Can someone come look at it this week?"}],"score":48,"tone":"Concerned","tags":["Damage"],"urgency":"medium","needsReply":true,"subj":"Closet floor"},{"id":"i3","at":"2026-11-10T09:05","ch":"email","dir":"out","by":"Wendell","summary":"Apologized and said he would come by Thursday.","lines":[{"t":"","s":"Wendell","x":"Sorry about that, Tom. I'll swing by Thursday afternoon to take a look and we'll make it right."}],"subj":"Re: Closet floor"},{"id":"i4","at":"2026-11-12T16:48","ch":"text","dir":"in","by":"Tom","summary":"Wendell had not arrived for the Thursday visit by 4:48 PM.","lines":[{"t":"4:48 PM","s":"c","x":"Wendell are you still coming today? It's almost 5.","f":["Missed visit"]}],"score":36,"tone":"Frustrated","tags":["Missed visit"],"urgency":"medium","needsReply":true},{"id":"i5","at":"2026-11-13T13:22","ch":"email","dir":"in","by":"Tom","summary":"Holding the $1,950 balance until someone looks at the floor. Mentions disputing the charge with his card.","lines":[{"t":"","s":"c","x":"I got the invoice for the balance. I'm not paying it until someone actually looks at the floor.","f":["Payment hold"]},{"t":"","s":"c","x":"Spatter on white oak isn't a touch-up. It may need to be refinished."},{"t":"","s":"c","x":"I'd rather sort this out with you than with my credit card company.","f":["Mentions chargeback"]}],"score":16,"tone":"Angry","tags":["Payment hold","Damage","Mentions chargeback"],"urgency":"high","needsReply":true,"subj":"Re: Invoice #4471"}],"days":["2026-11-03","2026-11-04","2026-11-05","2026-11-06"]},{"id":"J-2044","customer":{"name":"Priya Raman","first":"Priya","phone":"(614) 555-0119","email":"priya.raman@example.com","since":2026,"jobs":1,"lifetime":7200,"note":"New customer"},"title":"Cabinet refinishing","scope":"Kitchen: 32 doors and drawer fronts, boxes, island","value":7200,"stage":"In progress","stageNote":"Doors in the shop","pm":"Marisol R.","crew":"Crew C · Otis","interactions":[{"id":"i1","at":"2026-10-27T14:00","ch":"call","dir":"out","by":"Marisol","summary":"Color consult recap. Customer approved Alabaster in satin.","lines":[{"t":"0:10","s":"Marisol","x":"Just confirming the color you picked from the samples. Alabaster, satin finish."},{"t":"0:16","s":"c","x":"Yes, Alabaster. I love how warm it looked on the sample door.","f":["Color approved"]},{"t":"0:24","s":"Marisol","x":"Perfect. Doors go to the shop on the 9th."}],"score":86,"tone":"Warm","tags":["Color approved"],"urgency":"low","dur":154},{"id":"i2","at":"2026-11-11T19:30","ch":"email","dir":"in","by":"Priya","summary":"First doors back from the shop look gray next to the sample board. Worried about Thanksgiving.","lines":[{"t":"","s":"c","x":"The first doors came back today and they look gray next to the sample board, not warm white.","f":["Color mismatch"]},{"t":"","s":"c","x":"Is this the Alabaster we picked? Photos attached."},{"t":"","s":"c","x":"We're hosting Thanksgiving, so I'm nervous about the timeline.","f":["Holiday deadline"]}],"score":40,"tone":"Anxious","tags":["Color mismatch","Holiday deadline"],"urgency":"medium","needsReply":true,"subj":"Cabinet doors"},{"id":"i3","at":"2026-11-12T08:15","ch":"email","dir":"out","by":"Marisol","summary":"Said kitchen light can make white read cooler. Bringing the sample door Friday.","lines":[{"t":"","s":"Marisol","x":"Thanks for the photos. Kitchen lighting can make a white read cooler. I'll bring the sample door Friday so we can compare them side by side."}],"subj":"Re: Cabinet doors"},{"id":"i4","at":"2026-11-13T11:40","ch":"call","dir":"out","by":"Marisol","summary":"Side by side, the doors are grayer than the approved sample. Marisol is checking the batch with the shop and will call back today.","lines":[{"t":"0:06","s":"Marisol","x":"I've got the sample door right here next to the boxes."},{"t":"0:14","s":"c","x":"See? Side by side it's obviously grayer.","f":["Color mismatch"]},{"t":"0:22","s":"Marisol","x":"You're right, it's off. I'll check the batch with the shop."},{"t":"0:35","s":"c","x":"If they have to be redone, will they still be in before the 25th?","f":["Holiday deadline"]},{"t":"0:41","s":"Marisol","x":"Let me get the shop schedule and call you back today."}],"score":34,"tone":"Anxious","tags":["Color mismatch","Holiday deadline"],"urgency":"high","dur":302}],"days":["2026-11-10","2026-11-11","2026-11-12","2026-11-13"]},{"id":"J-2036","customer":{"name":"Desmond Varga","first":"Desmond","phone":"(614) 555-0163","email":"desmond.varga@example.com","since":2025,"jobs":2,"lifetime":13900,"note":"Repeat customer"},"title":"Exterior repaint","scope":"Two-story colonial: siding, trim, shutters, front door","value":11400,"stage":"Scheduled","stageNote":"Start moved twice, now Nov 16","pm":"Wendell T.","crew":"Crew A · Emil","interactions":[{"id":"i1","at":"2026-10-26T10:00","ch":"email","dir":"out","by":"Wendell","summary":"Scheduled the exterior to start Monday, Nov 2.","lines":[{"t":"","s":"Wendell","x":"You're on the schedule to start Monday, November 2. The crew will power wash the first day."}],"subj":"Exterior start date"},{"id":"i2","at":"2026-10-30T15:10","ch":"call","dir":"out","by":"Wendell","summary":"Rain in the forecast, so the start moved to Nov 9. Customer was fine with it.","lines":[{"t":"0:05","s":"Wendell","x":"We've got rain Monday through Wednesday, so I want to move you to the 9th."},{"t":"0:13","s":"c","x":"Okay, I get it. Can't paint in the rain."},{"t":"0:18","s":"Wendell","x":"I'll confirm with you the Friday before."}],"score":70,"tone":"Neutral","tags":["Schedule slip","Weather"],"urgency":"low","dur":130},{"id":"i3","at":"2026-11-08T19:45","ch":"text","dir":"in","by":"Desmond","summary":"Asked if Monday was still on. Nobody had confirmed on Friday as promised.","lines":[{"t":"7:45 PM","s":"c","x":"Are we still on for tomorrow? Nobody confirmed Friday and the forecast looks like rain again.","f":["Schedule slip"]}],"score":58,"tone":"Concerned","tags":["Schedule slip"],"urgency":"low","needsReply":true},{"id":"i4","at":"2026-11-09T07:10","ch":"text","dir":"in","by":"Desmond","summary":"Heard about the second delay from the crew lead at 6 AM, not from the office.","lines":[{"t":"7:10 AM","s":"c","x":"Your crew lead texted me at 6 this morning that you're pushing again."},{"t":"7:10 AM","s":"c","x":"Second delay, and the second time I'm hearing about it from the crew instead of the office.","f":["No update from office"]}],"score":30,"tone":"Frustrated","tags":["Schedule slip","No update from office"],"urgency":"medium","needsReply":true},{"id":"i5","at":"2026-11-09T08:20","ch":"call","dir":"out","by":"Wendell","summary":"Wendell apologized, became the single contact, proposed Nov 16 and promised a written schedule.","lines":[{"t":"0:05","s":"Wendell","x":"Desmond, I'm sorry you heard it from the crew first. That's on us."},{"t":"0:14","s":"c","x":"I just want one person who tells me what's going on.","f":["No update from office"]},{"t":"0:21","s":"Wendell","x":"That's me from here on. We're looking at Monday the 16th. I'll email the full schedule today."},{"t":"0:30","s":"c","x":"Okay. Please do."}],"score":52,"tone":"Guarded","tags":["Schedule slip"],"urgency":"low","dur":271},{"id":"i6","at":"2026-11-09T11:02","ch":"email","dir":"out","by":"Wendell","summary":"Sent the written schedule: start Nov 16, six working days.","lines":[{"t":"","s":"Wendell","x":"Start Monday 11/16. Six working days, weather permitting: wash and scrape, prime, two coats on the siding, then trim, shutters and the door."}],"subj":"Your exterior schedule"},{"id":"i7","at":"2026-11-12T18:05","ch":"email","dir":"in","by":"Desmond","summary":"Thanked Wendell for the schedule. Asked whether to move the cars on Monday.","lines":[{"t":"","s":"c","x":"Thanks for sending this. Do you need us to move the cars out of the driveway Monday?"}],"score":66,"tone":"Neutral","tags":["Logistics"],"urgency":"low","needsReply":true,"subj":"Re: Your exterior schedule"}],"days":["2026-11-16","2026-11-17","2026-11-18","2026-11-19","2026-11-20","2026-11-23"]},{"id":"J-2050","customer":{"name":"Hannah Cole","first":"Hannah","phone":"(614) 555-0108","email":"hannah.cole@example.com","since":2026,"jobs":0,"lifetime":0,"note":"Referred by a past customer"},"title":"Whole-house interior","scope":"Estimate: 9 rooms, stairwell, ceilings","value":14800,"stage":"Estimate","stageNote":"Revision asked for Nov 6","pm":"Tasha W.","crew":"Not assigned","interactions":[{"id":"i1","at":"2026-11-03T10:00","ch":"call","dir":"in","by":"Tasha","summary":"New lead from a referral. Walkthrough booked for the next day.","lines":[{"t":"0:05","s":"Tasha","x":"Thanks for calling, this is Tasha."},{"t":"0:09","s":"c","x":"Hi, my neighbor used you last spring and hasn't stopped talking about it.","f":["Referral"]},{"t":"0:18","s":"c","x":"We want the whole inside done before my in-laws visit in January."},{"t":"0:26","s":"Tasha","x":"I can come out for a walkthrough tomorrow at 4. Does that work?"}],"score":82,"tone":"Warm","tags":["Referral"],"urgency":"low","dur":365},{"id":"i2","at":"2026-11-05T14:30","ch":"email","dir":"out","by":"Tasha","summary":"Sent estimate #1188 for $14,800.","lines":[{"t":"","s":"Tasha","x":"Attached is your estimate for the full interior, $14,800. It's good for 30 days. Happy to walk through any line."}],"subj":"Your estimate #1188"},{"id":"i3","at":"2026-11-06T09:12","ch":"email","dir":"in","by":"Hannah","summary":"Asked for a revision without two bedroom ceilings and with the stairwell priced on its own.","lines":[{"t":"","s":"c","x":"Thanks Tasha. Could you revise it without the ceilings in the two upstairs bedrooms, and split out the stairwell?"},{"t":"","s":"c","x":"We'd like to decide by the end of next week."}],"score":72,"tone":"Neutral","tags":["Estimate revision"],"urgency":"low","needsReply":true,"subj":"Re: Your estimate #1188"},{"id":"i4","at":"2026-11-10T16:44","ch":"email","dir":"in","by":"Hannah","summary":"Followed up on the revision. Has a competing quote to answer by Friday.","lines":[{"t":"","s":"c","x":"Hi, just following up on the revised estimate.","f":["Estimate overdue"]},{"t":"","s":"c","x":"We have another quote we need to answer by Friday.","f":["Competing quote"]}],"score":46,"tone":"Concerned","tags":["Estimate overdue","Competing quote"],"urgency":"medium","needsReply":true,"subj":"Re: Your estimate #1188"},{"id":"i5","at":"2026-11-13T11:20","ch":"email","dir":"in","by":"Hannah","summary":"Still no revision after a week. Will go with the other company if nothing arrives today.","lines":[{"t":"","s":"c","x":"Still waiting on the revision.","f":["Estimate overdue"]},{"t":"","s":"c","x":"If we don't hear back today we'll go with the other company.","f":["Competing quote"]}],"score":22,"tone":"Frustrated","tags":["Estimate overdue","Competing quote"],"urgency":"high","needsReply":true,"subj":"Re: Your estimate #1188"}],"days":[]},{"id":"J-2042","customer":{"name":"Keisha Abernathy","first":"Keisha","phone":"(614) 555-0131","email":"kabernathy@example.com","since":2023,"jobs":3,"lifetime":12850,"note":"Repeat customer"},"title":"Popcorn ceiling removal","scope":"3 bedrooms: scrape, skim coat, prime, paint","value":5600,"stage":"Punch list","stageNote":"Closet touch-up Sat, Nov 14","pm":"Wendell T.","crew":"Crew A · Emil","interactions":[{"id":"i1","at":"2026-11-04T18:40","ch":"text","dir":"in","by":"Keisha","summary":"Dust all over her daughter's room, which was supposed to be sealed off.","lines":[{"t":"6:40 PM","s":"c","x":"There is dust all over my daughter's room and it was supposed to be sealed off.","f":["Containment"]},{"t":"6:40 PM","s":"c","x":"Her bed is covered. She can't sleep in there tonight.","f":["Dust"]}],"score":20,"tone":"Angry","tags":["Dust","Containment"],"urgency":"high","needsReply":true},{"id":"i2","at":"2026-11-04T19:02","ch":"call","dir":"out","by":"Wendell","summary":"Wendell apologized, sent the crew back at 8 AM to clean, and covered new bedding.","lines":[{"t":"0:04","s":"Wendell","x":"Keisha, it's Wendell. I just saw your text. I'm really sorry."},{"t":"0:11","s":"Wendell","x":"Emil will be there at 8 tomorrow to HEPA-vac the room, and we'll cover new bedding."},{"t":"0:24","s":"c","x":"Okay. I appreciate you calling right away."}],"score":48,"tone":"Guarded","tags":["Dust"],"urgency":"low","dur":235},{"id":"i3","at":"2026-11-05T13:10","ch":"text","dir":"in","by":"Keisha","summary":"Room cleaned. Thanked the team for handling it fast.","lines":[{"t":"1:10 PM","s":"c","x":"Room looks great. Thank you for handling it so fast.","f":["Praise"]}],"score":86,"tone":"Relieved","tags":["Praise"],"urgency":"low","needsReply":false},{"id":"i4","at":"2026-11-10T17:30","ch":"text","dir":"in","by":"Keisha","summary":"Happy with the ceilings. Asked when the hall closet touch-up can happen.","lines":[{"t":"5:30 PM","s":"c","x":"Ceilings look amazing. When can you do the last touch-up in the hall closet?"}],"score":84,"tone":"Warm","tags":["Praise","Punch list"],"urgency":"low","needsReply":true},{"id":"i5","at":"2026-11-11T09:00","ch":"text","dir":"out","by":"Wendell","summary":"Booked the closet touch-up for Saturday morning.","lines":[{"t":"9:00 AM","s":"Wendell","x":"Emil can do the closet touch-up Saturday at 9. Does that work?"}]}],"days":["2026-11-02","2026-11-03","2026-11-04","2026-11-14"]},{"id":"J-2039","customer":{"name":"Ray Castellano","first":"Ray","phone":"(614) 555-0186","email":"ray.castellano@example.com","since":2026,"jobs":1,"lifetime":4250,"note":"Insurance claim"},"title":"Ceiling repair and repaint","scope":"Living room: water-damaged drywall, stain block, ceiling and walls","value":4250,"stage":"Scheduled","stageNote":"Starts Tue, Nov 17","pm":"Wendell T.","crew":"Crew C · Otis","interactions":[{"id":"i1","at":"2026-11-05T09:30","ch":"call","dir":"in","by":"Wendell","summary":"Adjuster needs an itemized estimate before approving the claim.","lines":[{"t":"0:06","s":"c","x":"My adjuster says he needs your itemized estimate before he can approve anything."},{"t":"0:15","s":"Wendell","x":"I'll send it to you and him today."},{"t":"0:20","s":"c","x":"Okay. I just don't want this dragging into the holidays."}],"score":54,"tone":"Anxious","tags":["Insurance"],"urgency":"low","dur":244},{"id":"i2","at":"2026-11-05T15:00","ch":"email","dir":"out","by":"Wendell","summary":"Sent the itemized estimate to Ray and the adjuster.","lines":[{"t":"","s":"Wendell","x":"Itemized estimate attached, copied to your adjuster. Drywall, stain-blocking primer, ceiling and walls: $4,250."}],"subj":"Itemized estimate for your adjuster"},{"id":"i3","at":"2026-11-09T22:14","ch":"text","dir":"in","by":"Ray","summary":"Late-night text. No word from the adjuster and the ceiling stain is spreading.","lines":[{"t":"10:14 PM","s":"c","x":"Sorry for the late text. Any word from the adjuster?"},{"t":"10:14 PM","s":"c","x":"The brown stain on the ceiling is getting bigger.","f":["Spreading damage"]}],"score":42,"tone":"Anxious","tags":["Insurance","Spreading damage"],"urgency":"medium","needsReply":true},{"id":"i4","at":"2026-11-10T08:10","ch":"text","dir":"out","by":"Wendell","summary":"Called the adjuster, who expects to approve Thursday. Asked for a photo of the stain.","lines":[{"t":"8:10 AM","s":"Wendell","x":"Called your adjuster this morning. He expects to approve Thursday. Can you send a photo of the stain so I can forward it?"}]},{"id":"i5","at":"2026-11-12T14:25","ch":"text","dir":"in","by":"Ray","summary":"Adjuster approved. Asked when work can start.","lines":[{"t":"2:25 PM","s":"c","x":"Adjuster approved it! When can you start?"}],"score":80,"tone":"Relieved","tags":["Insurance"],"urgency":"low","needsReply":true},{"id":"i6","at":"2026-11-12T15:05","ch":"text","dir":"out","by":"Wendell","summary":"Offered a start on Tuesday, Nov 17.","lines":[{"t":"3:05 PM","s":"Wendell","x":"Great news. We can start Tuesday the 17th."}]},{"id":"i7","at":"2026-11-13T09:40","ch":"text","dir":"in","by":"Ray","summary":"Confirmed Tuesday. Asked if the crew needs the piano moved.","lines":[{"t":"9:40 AM","s":"c","x":"Tuesday works. Will the crew need us to move the piano?"}],"score":72,"tone":"Neutral","tags":["Logistics"],"urgency":"low","needsReply":true}],"days":["2026-11-17","2026-11-18"]},{"id":"J-2031","customer":{"name":"Walter Lindqvist","first":"Walter","phone":"(614) 555-0154","email":null,"since":2019,"jobs":2,"lifetime":9800,"note":"Prefers phone calls"},"title":"Exterior repaint","scope":"Ranch house: siding, trim, gutters, garage door","value":6100,"stage":"Invoiced","stageNote":"Check in the mail","pm":"Wendell T.","crew":"Crew C · Otis","interactions":[{"id":"i1","at":"2026-11-02T10:20","ch":"call","dir":"in","by":"Tasha","summary":"Invoice shows the full amount. His $2,000 deposit is not on it.","lines":[{"t":"0:08","s":"c","x":"I paid two thousand dollars when you started and this bill says I owe the whole thing.","f":["Invoice question"]},{"t":"0:19","s":"Tasha","x":"Let me pull up your account, Mr. Lindqvist."},{"t":"0:44","s":"Tasha","x":"I see the deposit. I'll have Wendell fix the invoice and call you today."},{"t":"0:52","s":"c","x":"I'd appreciate that. I don't want to pay it twice."}],"score":44,"tone":"Confused","tags":["Invoice question"],"urgency":"medium","dur":460},{"id":"i2","at":"2026-11-02T14:10","ch":"call","dir":"out","by":"Wendell","summary":"The deposit had been posted to the wrong job. Wendell explained the corrected invoice.","lines":[{"t":"0:05","s":"Wendell","x":"Mr. Lindqvist, your deposit was posted to the wrong job. That's fixed, and you owe $4,100."},{"t":"0:16","s":"c","x":"Oh good. I thought I was losing my mind."}],"score":74,"tone":"Relieved","tags":["Invoice question"],"urgency":"low","dur":182},{"id":"i3","at":"2026-11-06T11:00","ch":"call","dir":"in","by":"Tasha","summary":"Mailed the check and passed on his wife's compliment.","lines":[{"t":"0:06","s":"c","x":"Just letting you know the check went out this morning."},{"t":"0:12","s":"c","x":"My wife says the house hasn't looked this good in twenty years.","f":["Praise"]}],"score":80,"tone":"Warm","tags":["Payment","Praise"],"urgency":"low","dur":125}],"days":["2026-10-26","2026-10-27","2026-10-28","2026-10-29"]},{"id":"J-2047","customer":{"name":"Ingrid Solberg","first":"Ingrid","phone":"(614) 555-0125","email":"ingrid.solberg@example.com","since":2026,"jobs":1,"lifetime":3350,"note":"New customer"},"title":"Deck and fence stain","scope":"Cedar deck, railings, 80 ft of fence","value":3350,"stage":"Completed","stageNote":"Finished Nov 10","pm":"Marisol R.","crew":"Crew C · Otis","interactions":[{"id":"i1","at":"2026-11-06T08:05","ch":"text","dir":"in","by":"Ingrid","summary":"Asked if it is too cold to stain with a 45°F forecast.","lines":[{"t":"8:05 AM","s":"c","x":"Is it too cold to stain this week? It's supposed to be 45 tomorrow."}],"score":66,"tone":"Neutral","tags":["Weather"],"urgency":"low","needsReply":true},{"id":"i2","at":"2026-11-06T08:30","ch":"text","dir":"out","by":"Marisol","summary":"Explained the 50°F rule and moved the job to Monday.","lines":[{"t":"8:30 AM","s":"Marisol","x":"We need 50 degrees and a dry day after. Monday looks good, 58 and sunny, so we'll go then."}]},{"id":"i3","at":"2026-11-10T16:50","ch":"text","dir":"in","by":"Ingrid","summary":"Praised Otis's crew. Deck looks new and the site was left clean.","lines":[{"t":"4:50 PM","s":"c","x":"Otis and the guys were great. The deck looks brand new and they left everything spotless.","f":["Praise"]}],"score":96,"tone":"Warm","tags":["Praise"],"urgency":"low","review":"positive","needsReply":false},{"id":"i4","at":"2026-11-11T10:00","ch":"email","dir":"in","by":"Ingrid","summary":"Already referred a neighbor. Asked whether you do interiors too.","lines":[{"t":"","s":"c","x":"Already sent my neighbor your number.","f":["Referral"]},{"t":"","s":"c","x":"Do you also do interior? Our living room and stairs are next.","f":["New work"]}],"score":94,"tone":"Warm","tags":["Referral","New work"],"urgency":"low","needsReply":true,"subj":"Interior too?"}],"days":["2026-11-09","2026-11-10"]},{"id":"J-2033","customer":{"name":"Gloria Mendez","first":"Gloria","phone":"(614) 555-0190","email":"gmendez@example.com","since":2025,"jobs":2,"lifetime":8700,"note":"Repeat customer"},"title":"Trim and doors","scope":"Whole house: baseboards, 14 doors, stair spindles and rail","value":5950,"stage":"Completed","stageNote":"Paid in full","pm":"Marisol R.","crew":"Crew B · Andre","interactions":[{"id":"i1","at":"2026-11-05T17:15","ch":"text","dir":"in","by":"Gloria","summary":"Drips on the stair spindles. Asked for a fix before the crew finishes.","lines":[{"t":"5:15 PM","s":"c","x":"The spindles on the stairs have drips on them. Can someone fix them before you're done?","f":["Quality issue"]}],"score":48,"tone":"Concerned","tags":["Quality issue"],"urgency":"medium","needsReply":true},{"id":"i2","at":"2026-11-05T17:40","ch":"text","dir":"out","by":"Marisol","summary":"Andre to sand and recoat the spindles first thing Friday.","lines":[{"t":"5:40 PM","s":"Marisol","x":"Thanks for catching that. Andre will sand and recoat them first thing tomorrow."}]},{"id":"i3","at":"2026-11-06T15:30","ch":"text","dir":"in","by":"Gloria","summary":"Spindles fixed. Customer is happy.","lines":[{"t":"3:30 PM","s":"c","x":"Spindles look perfect now. Thank you!","f":["Praise"]}],"score":90,"tone":"Warm","tags":["Praise"],"urgency":"low","needsReply":false},{"id":"i4","at":"2026-11-10T09:15","ch":"email","dir":"in","by":"Gloria","summary":"Paid the balance. Plans to call in spring about the exterior.","lines":[{"t":"","s":"c","x":"Final payment sent this morning."},{"t":"","s":"c","x":"We'll call you in the spring about the outside.","f":["Repeat intent"]}],"score":92,"tone":"Warm","tags":["Payment","Repeat intent"],"urgency":"low","needsReply":false,"subj":"Final payment"}],"days":["2026-11-03","2026-11-04","2026-11-05","2026-11-06"]},{"id":"J-2048","customer":{"name":"Theo Marchetti","first":"Theo","phone":"(614) 555-0112","email":"theo.marchetti@example.com","since":2026,"jobs":1,"lifetime":2400,"note":"New customer"},"title":"Nursery and guest room","scope":"2 bedrooms: walls and trim, zero-VOC paint","value":2400,"stage":"Scheduled","stageNote":"Starts Wed, Nov 18","pm":"Marisol R.","crew":"Crew B · Andre","interactions":[{"id":"i1","at":"2026-11-09T13:00","ch":"email","dir":"in","by":"Theo","summary":"Baby due in December. Asked which paint and how long until the room is safe.","lines":[{"t":"","s":"c","x":"We have a baby due in December. What paint will you use in the nursery, and how long until the room is safe to use?","f":["Fumes"]}],"score":64,"tone":"Concerned","tags":["Fumes"],"urgency":"low","needsReply":true,"subj":"Paint for the nursery"},{"id":"i2","at":"2026-11-09T14:10","ch":"email","dir":"out","by":"Marisol","summary":"Zero-VOC paint, windows cracked while working, 48 hours of airing after.","lines":[{"t":"","s":"Marisol","x":"We'll use a zero-VOC paint and keep the windows cracked while we work. We still recommend airing the room out for 48 hours after the last coat."}],"subj":"Re: Paint for the nursery"},{"id":"i3","at":"2026-11-09T15:05","ch":"email","dir":"in","by":"Theo","summary":"Thanked Marisol for the fast, clear answer.","lines":[{"t":"","s":"c","x":"That's exactly what we hoped to hear. Thank you for answering so quickly!","f":["Praise"]}],"score":92,"tone":"Relieved","tags":["Praise"],"urgency":"low","needsReply":false,"subj":"Re: Paint for the nursery"}],"days":["2026-11-18","2026-11-19"]},{"id":"J-2045","customer":{"name":"Ben Adler","first":"Ben","phone":"(614) 555-0168","email":"ben.adler@example.com","since":2026,"jobs":1,"lifetime":2900,"note":"New customer"},"title":"Garage and shutters","scope":"Detached garage siding and trim, 12 shutters","value":2900,"stage":"Scheduled","stageNote":"Starts Mon, Nov 16","pm":"Tasha W.","crew":"Crew C · Otis","interactions":[{"id":"i1","at":"2026-11-04T11:30","ch":"call","dir":"in","by":"Tasha","summary":"Booked the job. Wants black shutters to match the front door.","lines":[{"t":"0:07","s":"c","x":"Black shutters, same as the front door."},{"t":"0:12","s":"Tasha","x":"Got it. I have you down for Monday the 16th."}],"score":76,"tone":"Neutral","tags":["Scheduling"],"urgency":"low","dur":150},{"id":"i2","at":"2026-11-12T10:00","ch":"text","dir":"out","by":"Tasha","summary":"Reminder for Monday's start.","lines":[{"t":"10:00 AM","s":"Tasha","x":"Hi Ben, reminder that Otis's crew starts on your garage Monday at 8."}]},{"id":"i3","at":"2026-11-12T10:22","ch":"text","dir":"in","by":"Ben","summary":"Confirmed Monday.","lines":[{"t":"10:22 AM","s":"c","x":"Sounds good, see you Monday."}],"score":78,"tone":"Neutral","tags":["Scheduling"],"urgency":"low","needsReply":false},{"id":"i4","at":"2026-11-13T16:12","ch":"text","dir":"out","by":"Tasha","summary":"Confirmed Monday's start after the 4 PM list.","lines":[{"t":"4:12 PM","s":"Tasha","x":"Hi Ben, Tasha here. Otis's crew is all set for Monday at 8. Text me if anything changes."}]}],"days":["2026-11-16","2026-11-17"]}],"escalations":[{"id":"E-101","job":"J-2031","severity":"medium","status":"resolved","opened":"2026-11-02T10:28","openedIx":"i1","raised":null,"reasons":["Invoice question"],"quote":"I paid two thousand dollars when you started and this bill says I owe the whole thing.","quoteIx":"i1","statusAt":"2026-11-02T14:15","statusBy":null,"actor":"Wendell T.","note":"Deposit was posted to the wrong job. Fixed the invoice and called Walter.","events":[{"at":"2026-11-02T10:28","kind":"opened","text":"Opened: customer disputes the invoice","actor":null},{"at":"2026-11-02T10:28","kind":"alerted","text":"Texted Wendell T. and you","actor":null},{"at":"2026-11-02T10:40","kind":"acknowledged","text":"Acknowledged","actor":"Tasha W."},{"at":"2026-11-02T14:15","kind":"resolved","text":"Resolved","actor":"Wendell T."}]},{"id":"E-102","job":"J-2042","severity":"high","status":"resolved","opened":"2026-11-04T18:41","openedIx":"i1","raised":null,"reasons":["Dust","Containment"],"quote":"There is dust all over my daughter's room and it was supposed to be sealed off.","quoteIx":"i1","statusAt":"2026-11-05T13:30","statusBy":null,"actor":"Wendell T.","note":"Crew HEPA-vacuumed the room and we paid for new bedding. Keisha thanked us.","events":[{"at":"2026-11-04T18:41","kind":"opened","text":"Opened: damage to a child's room, angry tone","actor":null},{"at":"2026-11-04T18:41","kind":"alerted","text":"Texted Wendell T. and you","actor":null},{"at":"2026-11-04T19:00","kind":"acknowledged","text":"Acknowledged","actor":"Wendell T."},{"at":"2026-11-05T13:30","kind":"resolved","text":"Resolved","actor":"Wendell T."}]},{"id":"E-103","job":"J-2033","severity":"medium","status":"resolved","opened":"2026-11-05T17:16","openedIx":"i1","raised":null,"reasons":["Quality issue"],"quote":"The spindles on the stairs have drips on them. Can someone fix them before you're done?","quoteIx":"i1","statusAt":"2026-11-06T15:40","statusBy":null,"actor":"Marisol R.","note":"Andre sanded and recoated the spindles. Gloria signed off.","events":[{"at":"2026-11-05T17:16","kind":"opened","text":"Opened: quality complaint before sign-off","actor":null},{"at":"2026-11-05T17:16","kind":"alerted","text":"Texted Marisol R. and you","actor":null},{"at":"2026-11-05T17:40","kind":"acknowledged","text":"Acknowledged","actor":"Marisol R."},{"at":"2026-11-06T15:40","kind":"resolved","text":"Resolved","actor":"Marisol R."}]},{"id":"E-104","job":"J-2036","severity":"medium","status":"acknowledged","opened":"2026-11-09T07:11","openedIx":"i4","raised":null,"reasons":["Schedule slip","No update from office"],"quote":"Second delay, and the second time I'm hearing about it from the crew instead of the office.","quoteIx":"i4","statusAt":"2026-11-09T08:30","statusBy":null,"actor":"Wendell T.","note":"Called Desmond. I'm his only contact now. New start 11/16, written schedule sent.","events":[{"at":"2026-11-09T07:11","kind":"opened","text":"Opened: second delay, customer heard it from the crew","actor":null},{"at":"2026-11-09T07:11","kind":"alerted","text":"Texted Wendell T. and you","actor":null},{"at":"2026-11-09T08:30","kind":"acknowledged","text":"Acknowledged","actor":"Wendell T."}]},{"id":"E-105","job":"J-2041","severity":"high","status":"new","opened":"2026-11-12T11:59","openedIx":"i5","raised":"2026-11-13T15:53","reasons":["Crew no-show","Unanswered","Mentions review"],"quote":"If this isn't finished Monday like I was promised I'm leaving a review. I already lost a day of work over this.","quoteIx":"i8","statusAt":null,"statusBy":null,"actor":null,"note":"","events":[{"at":"2026-11-12T11:59","kind":"opened","text":"Opened: second unanswered text, crew not on site","actor":null},{"at":"2026-11-12T11:59","kind":"alerted","text":"Texted Marisol R. and you","actor":null},{"at":"2026-11-13T15:53","kind":"raised","text":"Raised to high: customer mentions a review","actor":null}]},{"id":"E-106","job":"J-2029","severity":"high","status":"new","opened":"2026-11-12T16:49","openedIx":"i4","raised":"2026-11-13T13:23","reasons":["Damage","Missed visit","Payment hold"],"quote":"I got the invoice for the balance. I'm not paying it until someone actually looks at the floor.","quoteIx":"i5","statusAt":null,"statusBy":null,"actor":null,"note":"","events":[{"at":"2026-11-12T16:49","kind":"opened","text":"Opened: promised visit missed","actor":null},{"at":"2026-11-12T16:49","kind":"alerted","text":"Texted Wendell T. and you","actor":null},{"at":"2026-11-13T13:23","kind":"raised","text":"Raised to high: balance on hold, mentions a chargeback","actor":null}]},{"id":"E-107","job":"J-2050","severity":"medium","status":"new","opened":"2026-11-13T11:21","openedIx":"i5","raised":null,"reasons":["Estimate overdue","Competing quote"],"quote":"If we don't hear back today we'll go with the other company.","quoteIx":"i5","statusAt":null,"statusBy":null,"actor":null,"note":"","events":[{"at":"2026-11-13T11:21","kind":"opened","text":"Opened: revised estimate a week late, competing quote","actor":null},{"at":"2026-11-13T11:21","kind":"alerted","text":"Texted Tasha W. and you","actor":null}]},{"id":"E-108","job":"J-2044","severity":"medium","status":"new","opened":"2026-11-13T11:47","openedIx":"i4","raised":null,"reasons":["Color mismatch","Holiday deadline"],"quote":"If they have to be redone, will they still be in before the 25th?","quoteIx":"i4","statusAt":null,"statusBy":null,"actor":null,"note":"","events":[{"at":"2026-11-13T11:47","kind":"opened","text":"Opened: finished doors don't match the approved color","actor":null},{"at":"2026-11-13T11:47","kind":"alerted","text":"Texted Marisol R. and you","actor":null}]}],"meta":{"name":"Sample workspace","company":"Residential painting company","sample":true,"asOf":"2026-11-13T16:40","connections":[{"key":"phone","label":"Phone calls","provider":"Dialpad","detail":"3 lines: main, estimates, after-hours","status":"connected","since":"2026-10-12"},{"key":"texts","label":"Text messages","provider":"Dialpad","detail":"Same 3 numbers","status":"connected","since":"2026-10-12"},{"key":"email","label":"Email","provider":"Google Workspace","detail":"office@ and estimates@ inboxes","status":"connected","since":"2026-10-14"}],"team":[{"key":"marisol","name":"Marisol R.","role":"Project manager"},{"key":"wendell","name":"Wendell T.","role":"Project manager"},{"key":"tasha","name":"Tasha W.","role":"Office and estimates"},{"key":"andre","name":"Andre T.","role":"Crew lead, Crew B"}]},"settings":{"notify":{"pm":true,"sms":true,"email":true},"check":{"on":true,"remind":"16:00","escalate":"17:00"},"digest":{"on":true,"time":"07:00"},"threshold":40,"keywords":"review, refund, chargeback, lawyer, BBB, cancel","visibility":{"marisol":"own","wendell":"own","tasha":"all-no-audio","andre":"crew"}},"demo":{"text":{"id":"E-109","job":"J-2047","ix":{"id":"i5","at":"","ch":"text","dir":"in","by":"Ingrid","summary":"Stain on the deck rail is peeling three days after the job. Asks for someone to look before she writes a review.","lines":[{"t":"","s":"c","x":"The stain on the deck rail is already peeling in two spots. It's only been three days.","f":["Quality issue"]},{"t":"","s":"c","x":"Before I write a review, can someone come look at it?","f":["Mentions review"]}],"score":16,"tone":"Upset","tags":["Quality issue","Mentions review"],"urgency":"high","review":"negative","needsReply":true},"escalation":{"job":"J-2047","severity":"high","status":"new","openedIx":"i5","raised":null,"reasons":["Quality issue","Mentions review"],"quote":"Before I write a review, can someone come look at it?","quoteIx":"i5","statusAt":null,"statusBy":null,"actor":null,"note":"","events":[{"kind":"opened","text":"Opened: peeling stain, mentions a review","actor":null},{"kind":"alerted","text":"Texted Marisol R. and you","actor":null}]}},"call":{"job":"J-2041","ix":{"id":"i9","at":"","ch":"call","dir":"out","by":"Marisol","summary":"Marisol apologized for the missed callback and set Monday: crew at 8, walkthrough at 9.","lines":[{"t":"0:04","s":"Marisol","x":"Dana, it's Marisol. I'm sorry nobody called you back yesterday. That's on me."},{"t":"0:13","s":"c","x":"I appreciate you calling. I just want it finished."},{"t":"0:20","s":"Marisol","x":"Andre's crew is back Monday at 8 for the hallway, and I'll be there at 9 to walk it with you."},{"t":"0:31","s":"c","x":"Okay. Thank you for calling."}],"score":62,"tone":"Guarded","tags":["Schedule slip"],"urgency":"low","dur":214}}}};</script>
+<script>
+/* Stand-in for the claude.ai viewer, used only by the public demo on limeos.ai.
+   It serves the made-up sample data from memory with the same calls the page makes in
+   claude.ai (doc/collection, onSnapshot, update, set), so the page code is identical in
+   both places. Nothing leaves the browser, and a reload starts the demo over.
+
+   window.__demo runs the scripted moments: a customer's text arriving, the PM's call
+   back, and skipping ahead to the 5:00 PM step. The demo bar and the screen recording
+   both use it. */
+(function(){
+  "use strict";
+  var SEED = window.__SEED; try { delete window.__SEED; } catch (e) { window.__SEED = undefined; }
+
+  function clone(v){ return JSON.parse(JSON.stringify(v)); }
+  function pad(n){ return (n < 10 ? "0" : "") + n; }
+  function parse(s){ var m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(s || ""); return m ? new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]) : null; }
+  function iso(d){ return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) + "T" + pad(d.getHours()) + ":" + pad(d.getMinutes()); }
+  function clock(d){ var h = d.getHours(), m = d.getMinutes(); return (h % 12 || 12) + ":" + pad(m) + " " + (h < 12 ? "AM" : "PM"); }
+
+  /* ------------------------------------------------------------ the store */
+  var store = {};
+  store["workspace/meta"] = clone(SEED.meta);
+  store["workspace/settings"] = clone(SEED.settings);
+  SEED.jobs.forEach(function(j){ var d = clone(j); delete d.id; store["jobs/" + j.id] = d; });
+  SEED.escalations.forEach(function(e){ var d = clone(e); delete d.id; store["escalations/" + e.id] = d; });
+
+  var subs = [];
+  function snapDoc(path){
+    var d = store[path];
+    return { id: path.split("/").pop(), exists: d !== undefined, data: function(){ return d === undefined ? undefined : clone(d); },
+             metadata: { fromCache: false, hasPendingWrites: false } };
+  }
+  function snapCol(col){
+    var docs = Object.keys(store).filter(function(k){ var p = k.split("/"); return p.length === 2 && p[0] === col; }).sort().map(snapDoc);
+    return { docs: docs, size: docs.length, empty: !docs.length, docChanges: function(){ return []; },
+             metadata: { fromCache: false, hasPendingWrites: false } };
+  }
+  function touched(path){
+    var col = path.split("/")[0];
+    subs.forEach(function(s){ if (s.path === path || s.col === col) setTimeout(s.fire, 0); });
+  }
+  function merge(a, b){
+    var o = Object.assign({}, a);
+    Object.keys(b).forEach(function(k){
+      var v = b[k];
+      o[k] = v && typeof v === "object" && !Array.isArray(v) && a && a[k] && typeof a[k] === "object" && !Array.isArray(a[k]) ? merge(a[k], v) : clone(v);
+    });
+    return o;
+  }
+  function docRef(path){
+    return {
+      id: path.split("/").pop(), path: path,
+      onSnapshot: function(next){ var s = { path: path, fire: function(){ next(snapDoc(path)); } }; subs.push(s); setTimeout(s.fire, 20);
+        return function(){ subs = subs.filter(function(x){ return x !== s; }); }; },
+      get: function(){ return Promise.resolve(snapDoc(path)); },
+      update: function(p){ if (store[path] === undefined) return Promise.reject({ code: "not_found", message: "No such document" });
+        store[path] = merge(store[path], p); touched(path); return Promise.resolve(); },
+      set: function(p){ store[path] = clone(p); touched(path); return Promise.resolve(); },
+      "delete": function(){ delete store[path]; touched(path); return Promise.resolve(); }
+    };
+  }
+  var db = {
+    doc: docRef,
+    collection: function(col){
+      return {
+        id: col, path: col,
+        doc: function(id){ return docRef(col + "/" + id); },
+        onSnapshot: function(next){ var s = { col: col, fire: function(){ next(snapCol(col)); } }; subs.push(s); setTimeout(s.fire, 30);
+          return function(){ subs = subs.filter(function(x){ return x !== s; }); }; },
+        get: function(){ return Promise.resolve(snapCol(col)); }
+      };
+    }
+  };
+
+  /* The visitor is "you", the owner of the sample company. No name, no photo. */
+  var ME = "u_demo";
+  var user = {
+    id: function(){ return Promise.resolve(ME); },
+    me: function(){ return Promise.resolve({ id: ME, name: "", avatarUrl: "", color: "#5B7FA6", email: null, isOwner: true, canEdit: true }); },
+    isOwner: function(){ return Promise.resolve(true); },
+    canEdit: function(){ return Promise.resolve(true); },
+    can: function(){ return Promise.resolve(true); },
+    profiles: function(ids){ var o = {}; (ids || []).forEach(function(i){ o[i] = { id: i, name: "", avatarUrl: "", color: "#5B7FA6", email: null, isMe: i === ME, guest: false }; }); return Promise.resolve(o); }
+  };
+  window.claude = Object.freeze({ use: function(n){ return Promise.resolve(n === "db" ? db : n === "user" ? user : null); } });
+
+  /* ------------------------------------------------------------ scripted moments
+     The page's clock for sample data starts at meta.asOf and runs from when it reads it.
+     This keeps the same clock, and moves meta.asOf to skip ahead. */
+  var t0 = Date.now();
+  function now(){ return new Date(parse(store["workspace/meta"].asOf).getTime() + (Date.now() - t0)); }
+  function skip(min){
+    var d = new Date(now().getTime() + min * 6e4);
+    store["workspace/meta"] = merge(store["workspace/meta"], { asOf: iso(d) }); t0 = Date.now();
+    touched("workspace/meta");
+  }
+  function skipTo(hhmm){
+    var n = now(), m = /^(\d{1,2}):(\d{2})$/.exec(hhmm), t = new Date(n.getFullYear(), n.getMonth(), n.getDate(), +m[1], +m[2]);
+    if (t > n) skip((t - n) / 6e4);
+  }
+  function stampLines(ix, d){ (ix.lines || []).forEach(function(l){ if (!l.t && ix.ch === "text") l.t = clock(d); }); return ix; }
+  function addIx(jobId, ix){
+    var j = store["jobs/" + jobId]; if (!j) return;
+    store["jobs/" + jobId] = merge(j, { interactions: (j.interactions || []).concat([ix]) });
+    touched("jobs/" + jobId);
+  }
+  var done = {};
+  var D = SEED.demo || {};
+  function textArrives(){
+    var s = D.text; if (!s || done.text) return null;
+    done.text = true;
+    var d = now(), t = iso(d), ix = stampLines(clone(s.ix), d); ix.at = t;
+    addIx(s.job, ix);
+    var e = clone(s.escalation); e.opened = t;
+    e.events = (e.events || []).map(function(v){ v = clone(v); v.at = t; return v; });
+    store["escalations/" + s.id] = e; touched("escalations/" + s.id);
+    sync(); return s.id;
+  }
+  function callBack(){
+    var s = D.call; if (!s || done.call) return null;
+    done.call = true;
+    var d = now(), ix = clone(s.ix); ix.at = iso(d);
+    addIx(s.job, ix);
+    sync(); return ix.id;
+  }
+  function five(){ skipTo((store["workspace/settings"].check || {}).escalate || "17:00"); done.five = true; sync(); }
+
+  window.__demo = { textArrives: textArrives, callBack: callBack, skip: skip, skipTo: skipTo, five: five,
+                    now: function(){ return iso(now()); }, hideBar: function(){ var b = document.getElementById("demo-bar"); if (b) b.hidden = true; } };
+
+  /* ------------------------------------------------------------ the demo bar */
+  var CSS = ".demo-bar{background:var(--ink,#0D1421);color:#fff;font-size:13.5px;line-height:1.4}" +
+    ".demo-in{display:flex;align-items:center;gap:8px 18px;flex-wrap:wrap;padding-top:9px;padding-bottom:9px}" +
+    ".demo-in p{margin:0;flex:1 1 280px;color:#C9D6E5}.demo-in p b{color:#fff;font-weight:600}" +
+    ".demo-acts{display:flex;gap:8px;flex-wrap:wrap}" +
+    ".demo-acts button,.demo-acts a{font:inherit;font-size:13px;color:#fff;background:transparent;border:1px solid rgba(255,255,255,.32);border-radius:6px;padding:5px 10px;cursor:pointer;text-decoration:none;white-space:nowrap}" +
+    ".demo-acts button:hover,.demo-acts a:hover{border-color:#fff}" +
+    ".demo-acts button:disabled{opacity:.45;cursor:default;border-color:rgba(255,255,255,.32)}" +
+    ".demo-acts button:focus-visible,.demo-acts a:focus-visible{outline:2px solid #fff;outline-offset:2px}";
+  function sync(){
+    var bar = document.getElementById("demo-bar"); if (!bar) return;
+    bar.querySelector('[data-demo="text"]').disabled = !!done.text;
+    bar.querySelector('[data-demo="call"]').disabled = !!done.call;
+    bar.querySelector('[data-demo="five"]').disabled = !!done.five || now().getHours() >= 17;
+  }
+  function mount(){
+    var st = document.createElement("style"); st.textContent = CSS; document.head.appendChild(st);
+    var bar = document.createElement("div"); bar.className = "demo-bar"; bar.id = "demo-bar";
+    bar.innerHTML = '<div class="wrap demo-in"><p><b>Demo.</b> A made-up painting company on a Friday afternoon. What you change stays in this tab.</p>' +
+      '<div class="demo-acts" role="group" aria-label="Demo moments">' +
+      '<button type="button" data-demo="text">A customer texts in</button>' +
+      '<button type="button" data-demo="call">The PM calls Dana back</button>' +
+      '<button type="button" data-demo="five">Skip to 5:00 PM</button>' +
+      '<a href="/customer-tracker/">About the tracker</a></div></div>';
+    document.body.insertBefore(bar, document.body.firstChild);
+    bar.addEventListener("click", function(ev){
+      var b = ev.target.closest("[data-demo]"); if (!b || b.disabled) return;
+      var k = b.getAttribute("data-demo");
+      if (k === "text"){ textArrives(); if (location.hash !== "#escalations") location.hash = "#escalations"; }
+      else if (k === "call"){ callBack(); location.hash = "#check"; }
+      else if (k === "five"){ five(); location.hash = "#check"; }
+    });
+    sync(); setInterval(sync, 30000);
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mount); else mount();
+})();
+</script>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="#overview">
+      <svg viewBox="0 0 26 26" aria-hidden="true"><rect class="mk-bg" x="1" y="1" width="24" height="24" rx="7"/><path class="mk-ln" d="M7.5 9h11M7.5 13h8M7.5 17h4.5"/><circle class="mk-dot" cx="17" cy="17" r="2"/></svg>
+      <span>Sentiment Tracker</span>
+    </a>
+    <nav class="tabs" aria-label="Sections">
+      <a href="#overview" data-tab="overview">Overview</a>
+      <a href="#escalations" data-tab="escalations">Escalations <span class="n" id="n-esc" hidden></span></a>
+      <a href="#check" data-tab="check">Daily check <span class="n w" id="n-ck" hidden></span></a>
+      <a href="#jobs" data-tab="jobs">Jobs</a>
+      <a href="#workspace" data-tab="workspace">Settings</a>
+    </nav>
+    <div class="nav-r">
+      <span class="ws" id="ws" hidden><i aria-hidden="true"></i><span id="ws-name"></span></span>
+    </div>
+  </div>
+</header>
+
+<main id="app">
+  <section class="hero"><div class="frame" aria-hidden="true"></div><div class="wrap">
+    <p class="eyebrow">Loading workspace</p>
+    <h1 class="display">Reading your jobs<span class="l2">One moment.</span></h1>
+  </div></section>
+</main>
+
+<footer class="foot"><div class="wrap">
+  <span id="foot-sample"></span>
+  <span>Scores run from 0 to 100. Higher means a happier customer.</span>
+</div></footer>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------------------------------------------------------------- helpers */
+var RAW = typeof Symbol === "function" ? Symbol("html") : "__html_raw";
+function raw(s){ var o = {}; o[RAW] = String(s); return o; }
+function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+function val(v){
+  if (v === null || v === undefined || v === false) return "";
+  if (Array.isArray(v)) return v.map(val).join("");
+  if (typeof v === "object" && RAW in v) return v[RAW];
+  return esc(v);
+}
+/* Tagged template: interpolations are escaped unless they came from h`` or raw(). Data from
+   the store is other people's input, so nothing from it reaches innerHTML unescaped. */
+function h(strs){ var o = strs[0]; for (var i = 1; i < arguments.length; i++) o += val(arguments[i]) + strs[i]; return raw(o); }
+function $(s){ return document.querySelector(s); }
+function str(v){ return typeof v === "string" ? v : (typeof v === "number" ? String(v) : ""); }
+
+var DAY = 864e5, HOUR = 36e5, MIN = 6e4;
+var WD = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+var MO = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function parseT(s){
+  if (typeof s !== "string") return null;
+  var m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(s);
+  if (m) return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]);
+  var d = new Date(s); return isNaN(d.getTime()) ? null : d;
+}
+function isoLocal(d){ function p(n){ return (n < 10 ? "0" : "") + n; } return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + "T" + p(d.getHours()) + ":" + p(d.getMinutes()); }
+/* Sample data is a frozen afternoon. Its clock starts at the as-of time and runs from the
+   moment the page reads it, so what you do lands just after, and the 5:00 PM step arrives
+   on time if you wait for it. Real data has no as-of time and uses the real clock. */
+var clockT0 = Date.now(), clockAsOf = null;
+function NOW(){
+  var a = S.meta && parseT(S.meta.asOf); if (!a) return new Date();
+  if (S.meta.asOf !== clockAsOf){ clockAsOf = S.meta.asOf; clockT0 = Date.now(); }
+  return S.meta.sample ? new Date(a.getTime() + (Date.now() - clockT0)) : a;
+}
+function clock(d){ var hh = d.getHours(), mm = d.getMinutes(); var ap = hh < 12 ? "AM" : "PM"; hh = hh % 12 || 12; return hh + ":" + (mm < 10 ? "0" : "") + mm + " " + ap; }
+function dayDiff(d){ var n = NOW(); return Math.round((new Date(n.getFullYear(), n.getMonth(), n.getDate()) - new Date(d.getFullYear(), d.getMonth(), d.getDate())) / DAY); }
+function when(s){
+  var d = typeof s === "string" ? parseT(s) : s; if (!d) return "";
+  var k = dayDiff(d);
+  if (k === 0) return "today " + clock(d);
+  if (k === 1) return "yesterday " + clock(d);
+  if (k > 1 && k < 7) return WD[d.getDay()].slice(0, 3) + " " + clock(d);
+  return MO[d.getMonth()] + " " + d.getDate() + ", " + clock(d);
+}
+function When(s){ var w = when(s); return w.charAt(0).toUpperCase() + w.slice(1); }
+function dayHead(d){ var k = dayDiff(d), s = WD[d.getDay()] + ", " + MO[d.getMonth()] + " " + d.getDate(); return k === 0 ? "Today · " + s : k === 1 ? "Yesterday · " + s : s; }
+function dur(ms){
+  ms = Math.max(0, ms); var m = Math.round(ms / MIN);
+  if (m < 1) return "under a minute";
+  if (m < 60) return m + "m";
+  var hh = Math.floor(m / 60); if (hh < 24) return hh + "h" + (m % 60 ? " " + (m % 60) + "m" : "");
+  var dd = Math.floor(hh / 24); return dd + "d" + (hh % 24 ? " " + (hh % 24) + "h" : "");
+}
+function since(at){ var d = parseT(at); return d ? dur(NOW() - d) : ""; }
+function money(n){ return "$" + Number(n || 0).toLocaleString("en-US"); }
+function plural(n, one, many){ return n + " " + (n === 1 ? one : (many || one + "s")); }
+function mmss(sec){ sec = Math.round(sec || 0); var s = sec % 60; return Math.floor(sec / 60) + "m " + (s < 10 ? "0" : "") + s + "s"; }
+function median(a){ if (!a.length) return null; var s = a.slice().sort(function(x, y){ return x - y; }), k = Math.floor(s.length / 2); return s.length % 2 ? s[k] : (s[k - 1] + s[k]) / 2; }
+function byAt(a, b){ return a.at < b.at ? -1 : a.at > b.at ? 1 : 0; }
+
+var P = {
+  phone: '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/>',
+  text: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+  mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+  eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  alert: '<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+  down: '<path d="m22 17-8.5-8.5-5 5L2 7"/><path d="M16 17h6v-6"/>',
+  up: '<path d="m22 7-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/>',
+  flat: '<path d="M5 12h14"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+  users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>',
+  plug: '<path d="M9 2v6M15 2v6M6 8h12v4a6 6 0 0 1-12 0z"/><path d="M12 18v4"/>',
+  bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>',
+  gauge: '<path d="m12 14 4-4"/><path d="M3.3 19a10 10 0 1 1 17.4 0"/>',
+  lock: '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>'
+};
+function icon(n){ return raw('<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (P[n] || "") + '</svg>'); }
+var MARK = raw('<svg viewBox="0 0 26 26" aria-hidden="true"><rect class="mk-bg" x="1" y="1" width="24" height="24" rx="7"/><path class="mk-ln" d="M7.5 9h11M7.5 13h8M7.5 17h4.5"/><circle class="mk-dot" cx="17" cy="17" r="2"/></svg>');
+
+/* ---------------------------------------------------------------- vocabulary */
+var BANDS = {
+  risk:  { label: "At risk", pill: "p-crit", mark: "var(--crit)", range: "0 to 39", ic: "alert" },
+  watch: { label: "Watch",   pill: "p-warn", mark: "var(--warn)", range: "40 to 64", ic: "eye" },
+  good:  { label: "Healthy", pill: "p-good", mark: "var(--good)", range: "65 to 100", ic: "check" }
+};
+function bandKey(s){ return s < 40 ? "risk" : s < 65 ? "watch" : "good"; }
+function band(s){ return BANDS[bandKey(s)]; }
+var POS = ["Praise", "Referral", "Repeat intent", "New work", "Color approved"];
+var NEU = ["Scheduling", "Logistics", "Weather", "Insurance", "Payment", "Punch list", "Estimate revision"];
+function tagCls(t){ return POS.indexOf(t) >= 0 ? "p-good" : NEU.indexOf(t) >= 0 ? "" : "p-crit"; }
+var SEV = { high: { label: "High", pill: "p-crit", rank: 0 }, medium: { label: "Medium", pill: "p-warn", rank: 1 } };
+var ST = { "new": { label: "New", pill: "p-accent", rank: 0 }, acknowledged: { label: "Acknowledged", pill: "", rank: 1 }, resolved: { label: "Resolved", pill: "p-good", rank: 2 } };
+function sev(e){ return SEV[e.severity] || SEV.medium; }
+function st(e){ return ST[e.status] || ST["new"]; }
+function isOpen(e){ return e.status !== "resolved"; }
+function lastTouch(e){ return (str(e.raised) && e.raised > str(e.opened)) ? e.raised : str(e.opened); }
+function rankEsc(a, b){
+  var oa = isOpen(a), ob = isOpen(b);
+  if (oa !== ob) return oa ? -1 : 1;
+  if (!oa) return str(b.statusAt) < str(a.statusAt) ? -1 : 1;
+  var d = sev(a).rank - sev(b).rank; if (d) return d;
+  d = st(a).rank - st(b).rank; if (d) return d;
+  return lastTouch(b) < lastTouch(a) ? -1 : 1;
+}
+var CH_ICON = { call: "phone", text: "text", email: "mail" };
+function chName(i){ return i.ch === "call" ? "Call" : i.ch === "text" ? "Text" : "Email"; }
+function first(j){ return (j.customer && str(j.customer.first)) || "Customer"; }
+function cname(j){ return (j.customer && str(j.customer.name)) || str(j._id); }
+var VIS = [["all", "Everything"], ["all-no-audio", "All jobs, no call audio"], ["own", "Their own jobs"], ["crew", "Their crew's jobs"]];
+
+/* ---------------------------------------------------------------- state */
+var S = {
+  db: null, user: null, me: null, myId: null, canWrite: null, canAdmin: false, readOnly: false,
+  meta: null, settings: null, jobs: [], escs: [],
+  got: { meta: false, settings: false, jobs: false, escs: false },
+  slow: false, fail: null,
+  filterJobs: "all", sortJobs: "attention", q: "", filterEsc: "open", focusIx: null
+};
+var busy = {}, lastKey = null, raf = 0, pendingRender = false;
+function ready(){ return S.got.jobs && S.got.escs && S.got.meta; }
+
+/* Everything shown is derived from the interactions, so a score, a trend, a wait and a
+   reply time can never disagree with the conversations behind them. */
+function derive(j){
+  var ixs = (Array.isArray(j.interactions) ? j.interactions : []).filter(function(i){ return i && parseT(i.at); }).slice().sort(byAt);
+  var series = [], s = null;
+  ixs.forEach(function(i){
+    if (typeof i.score === "number" && isFinite(i.score)){
+      s = s === null ? i.score : s + (i.score - s) / 2;     // halfway toward each new conversation
+      series.push({ t: parseT(i.at), v: s, ix: i });
+    }
+  });
+  var cut = NOW().getTime() - 7 * DAY, prev = null;
+  series.forEach(function(p){ if (p.t.getTime() <= cut) prev = p.v; });
+  var lastReply = null;
+  ixs.forEach(function(i){ if (i.dir === "out" || i.ch === "call") lastReply = i; });
+  var waiting = null;
+  for (var k = 0; k < ixs.length; k++){
+    var i = ixs[k];
+    if (lastReply && i.at <= lastReply.at) continue;
+    if (i.dir === "in" && i.ch !== "call" && i.needsReply){ waiting = i; break; }
+  }
+  var pairs = [];
+  ixs.forEach(function(i, n){
+    if (i.dir === "in" && i.ch !== "call" && i.needsReply){
+      for (var m = n + 1; m < ixs.length; m++){
+        var r = ixs[m];
+        if (r.dir === "out" || r.ch === "call"){ pairs.push({ from: i, to: r, ms: parseT(r.at) - parseT(i.at) }); break; }
+      }
+    }
+  });
+  return {
+    ixs: ixs, series: series, score: s === null ? null : Math.round(s),
+    prev: prev === null ? null : Math.round(prev), waiting: waiting, pairs: pairs,
+    last: ixs[ixs.length - 1] || null,
+    open: S.escs.filter(function(e){ return e.job === j._id && isOpen(e); }).sort(rankEsc),
+    all: S.escs.filter(function(e){ return e.job === j._id; })
+  };
+}
+function jobsD(){ return S.jobs.map(function(j){ return { j: j, d: derive(j) }; }); }
+function jobById(id){ var j = S.jobs.filter(function(x){ return x._id === id; })[0]; return j ? { j: j, d: derive(j) } : null; }
+function findIx(j, id){ return (Array.isArray(j.interactions) ? j.interactions : []).filter(function(i){ return i && i.id === id; })[0] || null; }
+function recentPairs(J){
+  var now = NOW().getTime(), out = [];
+  J.forEach(function(x){ x.d.pairs.forEach(function(p){ if (now - parseT(p.to.at).getTime() <= 14 * DAY) out.push(p); }); });
+  return out;
+}
+/* People who use the page are "you" or "a teammate". The page never shows a viewer's
+   account name; names on screen are the workspace's own (the team list, the conversations). */
+function personName(id){
+  if (!id) return "someone";
+  if (id === S.myId) return "you";
+  return "a teammate";
+}
+function teamName(first){
+  var t = (S.meta && Array.isArray(S.meta.team) ? S.meta.team : []).filter(function(p){ return str(p.name).split(" ")[0] === first; })[0];
+  return t ? str(t.name) : str(first);
+}
+function cite(i, j){
+  var who = i.ch === "call" ? "Call with " + first(j) : chName(i) + " from " + (i.dir === "in" ? first(j) : str(i.by) || "your team");
+  return who + " · " + when(i.at);
+}
+
+/* ---------------------------------------------------------------- daily check
+   Every customer with a crew on site today, or a crew starting on the next working day,
+   should hear from someone on the team before the day is out. At the reminder time each
+   PM gets a text listing theirs that nobody has reached. At the escalation time each of
+   those PMs gets a close-out and the owner gets one roll-up of whoever is still waiting,
+   PM named on each line. Weekdays only, each step once a day.
+   Nothing is stored. It is worked out from the conversations every time, so a customer
+   drops off the list the moment anyone on the team texts, emails or calls them. */
+function dayStart(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+function addDays(d, n){ return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
+function ymd(d){ return isoLocal(d).slice(0, 10); }
+function workday(d){ var w = d.getDay(); return w > 0 && w < 6; }
+function nextWorkday(d){ var x = addDays(d, 1); while (!workday(x)) x = addDays(x, 1); return x; }
+function prevWorkday(d){ var x = addDays(d, -1); while (!workday(x)) x = addDays(x, -1); return x; }
+function atClock(day, hhmm){ var m = /^(\d{1,2}):(\d{2})$/.exec(str(hhmm)); return new Date(day.getFullYear(), day.getMonth(), day.getDate(), m ? +m[1] : 16, m ? +m[2] : 0); }
+function hm(hhmm){ return clock(atClock(new Date(), hhmm)); }
+function dayName(d, from){ var k = Math.round((dayStart(d) - dayStart(from)) / DAY); return k === 0 ? "today" : k === 1 ? "tomorrow" : k === -1 ? "yesterday" : WD[d.getDay()]; }
+function crewOf(j){ var c = str(j.crew), k = c.indexOf("·"); return k >= 0 ? c.slice(k + 1).trim() + "'s crew" : "The crew"; }
+function names(list){ var n = list.map(function(r){ return cname(r.j); }); return n.length < 2 ? n.join("") : n.slice(0, -1).join(", ") + " and " + n[n.length - 1]; }
+function watched(j, day){
+  var days = (Array.isArray(j.days) ? j.days : []).filter(function(x){ return typeof x === "string"; }).slice().sort();
+  if (!days.length) return null;
+  if (days.indexOf(ymd(day)) >= 0) return "onsite";
+  if (days[0] === ymd(nextWorkday(day))) return "starts";
+  return null;
+}
+/* The team reaching out: a text, an email or a call from the team (a call under five
+   seconds is a hang-up). The customer calling in does not count. */
+function reachOuts(j, day, until){
+  var t = ymd(day);
+  return (Array.isArray(j.interactions) ? j.interactions : []).filter(function(i){
+    if (!i || i.dir !== "out" || str(i.at).slice(0, 10) !== t) return false;
+    if (i.ch === "call" && typeof i.dur === "number" && i.dur < 5) return false;
+    var d = parseT(i.at); return !!d && (!until || d <= until);
+  }).sort(byAt);
+}
+function dailyCheck(){
+  var cfg = (S.settings && S.settings.check) || {};
+  var now = NOW(), today = dayStart(now);
+  var c = { on: cfg.on !== false, remind: str(cfg.remind) || "16:00", escalate: str(cfg.escalate) || "17:00",
+            now: now, today: today, work: workday(today), next: nextWorkday(today), rows: [], open: [], listed: [], rolled: [], pms: {}, pmOrder: [] };
+  c.tRemind = atClock(today, c.remind); c.tEsc = atClock(today, c.escalate);
+  c.stage = !c.on ? "off" : !c.work ? "weekend" : now < c.tRemind ? "before" : now < c.tEsc ? "between" : "after";
+  if (!c.on || !c.work) return c;
+  var y = prevWorkday(today);
+  S.jobs.forEach(function(j){
+    var why = watched(j, today); if (!why) return;
+    var outs = reachOuts(j, today, now), f = outs[0] || null, ft = f ? parseT(f.at) : null;
+    c.rows.push({ j: j, why: why, first: f, pm: str(j.pm),
+      listed: now >= c.tRemind && !(ft && ft < c.tRemind),
+      rolled: now >= c.tEsc && !(ft && ft < c.tEsc),
+      missedY: !!watched(j, y) && !reachOuts(j, y, null).length });
+  });
+  c.rows.sort(function(a, b){
+    if (!a.first !== !b.first) return a.first ? 1 : -1;
+    if (!a.first){ if (a.missedY !== b.missedY) return a.missedY ? -1 : 1; return cname(a.j) < cname(b.j) ? -1 : 1; }
+    return byAt(b.first, a.first);
+  });
+  c.open = c.rows.filter(function(r){ return !r.first; });
+  c.listed = c.rows.filter(function(r){ return r.listed; });
+  c.rolled = c.rows.filter(function(r){ return r.rolled; });
+  c.listed.forEach(function(r){ var k = r.pm || "The office"; if (!c.pms[k]){ c.pms[k] = []; c.pmOrder.push(k); } c.pms[k].push(r); });
+  c.pmOrder.sort();
+  c.pmOrder.forEach(function(k){ c.pms[k].sort(function(a, b){ return cname(a.j) < cname(b.j) ? -1 : 1; }); });
+  c.yWord = dayName(y, today);
+  return c;
+}
+function pmEnd(pm){ pm = pm || "not set"; return /\.$/.test(pm) ? pm : pm + "."; }
+function span(a, b){
+  function sh(x){ var d = atClock(new Date(), x), hh = d.getHours(), mm = d.getMinutes(); return { t: (hh % 12 || 12) + (mm ? ":" + (mm < 10 ? "0" : "") + mm : ""), ap: hh < 12 ? "AM" : "PM" }; }
+  var x = sh(a), y = sh(b); return x.t + (x.ap === y.ap ? "" : " " + x.ap) + "–" + y.t + " " + y.ap;
+}
+function whyText(r, c){ return crewOf(r.j) + (r.why === "onsite" ? " is on site today" : " starts " + dayName(c.next, c.today)); }
+function reachText(r){ var i = r.first; return teamName(str(i.by)) + " · " + (i.ch === "call" ? "call" : chName(i).toLowerCase()) + " " + clock(parseT(i.at)); }
+function msgRemind(pm, rows, c){
+  return h`<p>Hi ${pm.split(" ")[0]}. Nobody on the team has reached ${rows.length === 1 ? "this customer" : "these customers"} today:</p>
+    <ul>${rows.map(function(r){ return h`<li>${cname(r.j)}, ${r.j._id}. ${whyText(r, c)}.</li>`; })}</ul>
+    <p>Please reach out before ${hm(c.escalate)}. Anyone still on the list then goes to the owner.</p>`;
+}
+function msgClose(pm, rows, c){
+  var got = rows.filter(function(r){ return !r.rolled; }), left = rows.filter(function(r){ return r.rolled; }), fn = pm.split(" ")[0];
+  if (!left.length) return h`<p>Thanks, ${fn}. ${names(got)} heard from us today. All clear.</p>`;
+  var tail = left.length === 1 ? "That one goes to the owner now." : "Those go to the owner now.";
+  if (got.length) return h`<p>Thanks, ${fn}. ${names(got)} heard from us. Still not reached: ${names(left)}. ${tail}</p>`;
+  return h`<p>${fn}, ${names(left)} still ${left.length === 1 ? "hasn't" : "haven't"} heard from us today. ${tail}</p>`;
+}
+function msgRoll(rows, c){
+  return h`<p>${rows.length === 1 ? "1 customer" : rows.length + " customers"} nobody on the team reached today:</p>
+    <ul>${rows.map(function(r){ return h`<li>${cname(r.j)}, ${r.j._id}, PM ${pmEnd(r.pm)} ${whyText(r, c)}${r.missedY ? ", and nobody reached them " + c.yWord + " either" : ""}.</li>`; })}</ul>`;
+}
+function bubble(to, at, body, preview){
+  return h`<div class="bubble${preview ? " preview" : ""}"><span class="to">${icon("text")}${to}${at ? " · " + at : ""}</span>${body}</div>`;
+}
+
+/* ---------------------------------------------------------------- shared pieces */
+function hero(o){
+  return h`<section class="hero${o.compact ? " compact" : ""}">
+    <div class="frame" aria-hidden="true"></div>
+    <div class="wrap"><div class="hero-grid${o.aside ? " split" : ""}">
+      <div class="hero-copy">
+        <p class="eyebrow">${o.eyebrow}</p>
+        <h1 class="display">${o.l1}<span class="l2">${o.l2}</span></h1>
+        ${o.meta || ""}
+        ${o.lede ? h`<p class="lede">${o.lede}</p>` : ""}
+        ${o.actions || ""}
+      </div>
+      ${o.aside || ""}
+    </div></div>
+  </section>`;
+}
+function asOfEyebrow(){
+  var d = NOW(), sample = S.meta && S.meta.sample;
+  return h`<span>As of ${WD[d.getDay()]}, ${MO[d.getMonth()]} ${d.getDate()} · ${clock(d)}</span>${sample ? h`<span class="pill p-warn">Sample data</span>` : ""}`;
+}
+function scorePill(s){ var b = band(s); return h`<span class="pill ${b.pill}">${s}/100</span>`; }
+function bandPill(s, withNum){ var b = band(s); return h`<span class="pill ${b.pill}">${icon(b.ic)}${b.label}${withNum ? " · " + s : ""}</span>`; }
+function waitPill(at){
+  var ms = NOW() - parseT(at), cls = ms > DAY ? "p-crit" : ms > 4 * HOUR ? "p-warn" : "";
+  return h`<span class="pill ${cls}">${icon("clock")}${dur(ms)}</span>`;
+}
+function trend(d){
+  if (d.prev === null || d.score === null) return h`<span class="trend fl" title="No score a week ago" aria-label="No score a week ago">—</span>`;
+  var n = d.score - d.prev;
+  if (n === 0) return h`<span class="trend fl">${icon("flat")}0</span>`;
+  return n < 0 ? h`<span class="trend dn">${icon("down")}${-n}</span>` : h`<span class="trend up">${icon("up")}+${n}</span>`;
+}
+function readOnlyNote(){
+  if (!(S.readOnly || S.canWrite === false)) return "";
+  return h`<p class="note-bar">You can read this workspace but not change it. Ask the owner to share it with you as a Contributor to work escalations.</p>`;
+}
+function canAct(){ return !!S.db && !S.readOnly && S.canWrite !== false; }
+
+/* ---------------------------------------------------------------- overview */
+function viewOverview(){
+  var J = jobsD();
+  var open = S.escs.filter(isOpen).sort(rankEsc), fresh = open.filter(function(e){ return e.status === "new"; });
+  var waiting = J.filter(function(x){ return x.d.waiting; }).sort(function(a, b){ return byAt(a.d.waiting, b.d.waiting); });
+  var scored = J.filter(function(x){ return x.d.score !== null; });
+  var by = { risk: [], watch: [], good: [] };
+  scored.forEach(function(x){ by[bandKey(x.d.score)].push(x); });
+  var pairs = recentPairs(J), med = median(pairs.map(function(p){ return p.ms; }));
+  var fast = pairs.filter(function(p){ return p.ms <= HOUR; }).length;
+
+  var l1 = open.length ? plural(open.length, "open escalation") + "." : "No open escalations.";
+  var l2 = fresh.length ? fresh.length + " not picked up yet." : open.length ? "Every one has an owner." : "Nothing needs you right now.";
+  var pctNew = open.length ? fresh.length / open.length * 100 : 0;
+
+  var tray = h`<div class="tray"><div class="kpis">
+    ${kpi({ href: "#escalations", v: open.length, l: "Open escalations", c: fresh.length + " not picked up",
+            segs: open.length ? [{ w: pctNew, c: "var(--crit)" }, { w: 100 - pctNew, c: "var(--accent)" }] : [] })}
+    ${kpi({ href: "#jobs", f: "waiting", v: waiting.length, small: waiting.length === 1 ? "customer" : "customers", l: "Waiting on a reply",
+            c: waiting.length ? "Longest: " + since(waiting[0].d.waiting.at) : "Nobody is waiting",
+            segs: [{ w: J.length ? waiting.length / J.length * 100 : 0, c: "var(--warn)" }] })}
+    ${kpi({ href: "#jobs", f: "risk", v: by.risk.length, small: "of " + scored.length, l: "Jobs at risk", c: "Score under 40",
+            segs: [{ w: scored.length ? by.risk.length / scored.length * 100 : 0, c: "var(--crit)" }] })}
+    ${kpi({ href: "#jobs", v: med === null ? "None" : dur(med), l: "Median time to reply", c: pairs.length ? "Last 14 days · " + fast + " of " + pairs.length + " within an hour" : "No replies in 14 days",
+            segs: [{ w: pairs.length ? fast / pairs.length * 100 : 0, c: "var(--good)" }] })}
+  </div></div>`;
+
+  return h`${hero({ eyebrow: asOfEyebrow(), l1: l1, l2: l2,
+    lede: "Calls, texts and emails with your customers from the last 30 days, scored and matched to the job they belong to. Escalations are the conversations most likely to end in a bad review.",
+    actions: h`<div class="hero-actions"><a class="btn btn-primary" href="#escalations">Open the queue</a><a class="btn btn-bracket" href="#jobs">All jobs</a></div>`,
+    aside: tray })}
+  <div class="wrap body">
+    <div class="grid g-7-5">
+      ${cardNeeds(open)}
+      ${cardScores(scored, by)}
+    </div>
+    <div class="grid g-7-5">
+      ${cardWaiting(waiting)}
+      ${cardCheck()}
+    </div>
+  </div>`;
+}
+function kpi(o){
+  return h`<a class="kpi" href="${o.href}"${o.f ? raw(' data-fjobs="' + esc(o.f) + '"') : ""}>
+    <span class="v">${o.v}${o.small ? h`<small>${o.small}</small>` : ""}</span>
+    <span class="l">${o.l}</span>
+    <span class="c">${o.c}</span>
+    <span class="rail" aria-hidden="true">${o.segs.filter(function(s){ return s.w > 0; }).map(function(s){ return h`<i style="width:${Math.round(s.w * 10) / 10}%;background:${raw(s.c)}"></i>`; })}</span>
+  </a>`;
+}
+function cardNeeds(open){
+  var rows = open.slice(0, 5).map(function(e){
+    var x = jobById(e.job); if (!x) return "";
+    return h`<a class="flag" href="#job-${e.job}" data-ix="${str(e.quoteIx)}">
+      <span class="pill ${sev(e).pill}">${sev(e).label}</span>
+      <span class="who">${cname(x.j)}<span> · ${str(x.j.title)}</span></span>
+      <span class="age">${st(e).label} · ${since(lastTouch(e))}</span>
+      <span class="q">“${str(e.quote)}”</span>
+    </a>`;
+  });
+  return h`<section class="card">
+    <header class="card-h">${icon("eye")}<h2>Needs attention</h2><span class="aside">${plural(open.length, "open escalation")}</span></header>
+    <div class="card-b">${open.length ? h`<div class="flags">${rows}</div>` : h`<p class="empty">No open escalations. A new one shows up here as soon as a conversation turns.</p>`}</div>
+    <div class="card-f"><a class="btn btn-bracket btn-sm" href="#escalations">Open the queue ${icon("arrow")}</a></div>
+  </section>`;
+}
+function cardScores(scored, by){
+  var low = scored.slice().sort(function(a, b){ return a.d.score - b.d.score; }).slice(0, 5);
+  var keys = ["risk", "watch", "good"];
+  var label = keys.map(function(k){ return BANDS[k].label + " " + by[k].length; }).join(", ");
+  return h`<section class="card">
+    <header class="card-h">${icon("gauge")}<h2>Jobs by score</h2><span class="aside">${plural(scored.length, "job")}</span></header>
+    <div class="card-b">
+      <div class="seg" role="img" aria-label="${label}">${keys.filter(function(k){ return by[k].length; }).map(function(k){
+        return h`<i style="flex:${by[k].length};background:${raw(BANDS[k].mark)}" title="${BANDS[k].label}: ${plural(by[k].length, "job")} (${Math.round(by[k].length / scored.length * 100)}%)"></i>`; })}</div>
+      <div class="legend">${keys.map(function(k){ return h`<span><i style="background:${raw(BANDS[k].mark)}"></i>${BANDS[k].label} <b>${by[k].length}</b></span>`; })}</div>
+      <div>${low.map(function(x){ var b = band(x.d.score); return h`<a class="jrow" href="#job-${x.j._id}">
+        <span class="jn"><span class="nm">${cname(x.j)}</span><span class="sub">${str(x.j.title)} · ${x.j._id}</span></span>
+        <span class="meter" aria-hidden="true"><i style="width:${x.d.score}%;background:${raw(b.mark)}"></i></span>
+        <span class="score-n" aria-label="Score ${x.d.score}, ${b.label}">${x.d.score}</span></a>`; })}</div>
+    </div>
+    <div class="card-f"><a class="btn btn-bracket btn-sm" href="#jobs">All jobs ${icon("arrow")}</a></div>
+  </section>`;
+}
+function cardWaiting(waiting){
+  return h`<section class="card">
+    <header class="card-h">${icon("clock")}<h2>Waiting on a reply</h2><span class="aside">${plural(waiting.length, "customer")}</span></header>
+    <div class="card-b">${waiting.length ? waiting.map(function(x){
+      var i = x.d.waiting, words = (Array.isArray(i.lines) ? i.lines : []).filter(function(l){ return l && l.s === "c"; }).map(function(l){ return str(l.x); }).join(" ");
+      return h`<a class="wrow" href="#job-${x.j._id}" data-ix="${str(i.id)}">
+        <span class="ch-ic">${icon(CH_ICON[i.ch] || "mail")}</span>
+        <span><span class="nm">${cname(x.j)}</span> <span class="sub">· ${str(x.j.title)} · ${chName(i).toLowerCase()} ${when(i.at)}</span><span class="msg">“${words}”</span></span>
+        ${waitPill(i.at)}
+      </a>`; }) : h`<p class="empty">Every customer message has a reply.</p>`}</div>
+  </section>`;
+}
+
+/* ---------------------------------------------------------------- escalations */
+function viewEscalations(){
+  var all = S.escs.slice().sort(rankEsc);
+  var g = {
+    open: all.filter(isOpen),
+    "new": all.filter(function(e){ return e.status === "new"; }),
+    acknowledged: all.filter(function(e){ return e.status === "acknowledged"; }),
+    resolved: all.filter(function(e){ return e.status === "resolved"; }),
+    all: all
+  };
+  var F = [["open", "Open"], ["new", "New"], ["acknowledged", "Acknowledged"], ["resolved", "Resolved"], ["all", "All"]];
+  var list = steady(g[S.filterEsc] || g.open, S.filterEsc + "|" + visit);
+  return h`${hero({ compact: true, eyebrow: "Escalations",
+    l1: "Escalation queue", l2: g.open.length ? g.open.length + " open, " + g["new"].length + " new" : "Nothing open",
+    lede: "A conversation that turns opens an escalation right away, and the job's PM and you get a text. Pick it up so the team knows you have it. Resolve it once the customer is taken care of." })}
+  <div class="wrap body">
+    ${readOnlyNote()}
+    ${checkBar()}
+    <div class="tools"><div class="chips" role="group" aria-label="Filter escalations">${F.map(function(f){
+      return h`<button class="chip" type="button" data-act="fesc" data-v="${f[0]}" aria-pressed="${S.filterEsc === f[0] ? "true" : "false"}">${f[1]} <b>${g[f[0]].length}</b></button>`; })}</div></div>
+    ${list.length ? h`<div class="esc-list">${list.map(function(e){ return escCard(e, false); })}</div>`
+      : h`<div class="card"><p class="empty pad">${S.filterEsc === "resolved" ? "Resolved escalations collect here." : "Nothing here. When a conversation turns, it shows up with the line that triggered it."}</p></div>`}
+  </div>`;
+}
+/* The queue is ranked when you arrive. Acknowledging a card would otherwise drop it down the
+   list at once and slide the next customer under the pointer, so cards keep their place until
+   you come back to the page or change the filter. New escalations still arrive at the top. */
+var steadyKey = null, steadyIds = [], visit = 0;
+function steady(list, key){
+  if (key !== steadyKey){ steadyKey = key; steadyIds = list.map(function(e){ return e._id; }); return list; }
+  var pos = {}; steadyIds.forEach(function(id, k){ pos[id] = k; });
+  var fresh = list.filter(function(e){ return !(e._id in pos); });
+  var kept = list.filter(function(e){ return e._id in pos; }).sort(function(a, b){ return pos[a._id] - pos[b._id]; });
+  var out = fresh.concat(kept); steadyIds = out.map(function(e){ return e._id; });
+  return out;
+}
+function escCard(e, inJob){
+  var x = jobById(e.job), j = x ? x.j : null, qi = j ? findIx(j, e.quoteIx) : null;
+  var s = sev(e), t = st(e), act = canAct(), isBusy = !!busy[e._id];
+  var by = e.statusBy ? personName(e.statusBy) : (str(e.actor) || "someone");
+  var state = e.status === "new" ? "Not picked up yet · open " + since(e.opened)
+    : e.status === "acknowledged" ? "Acknowledged by " + by + " · " + when(e.statusAt)
+    : "Resolved by " + by + " · " + when(e.statusAt);
+  var btns = "";
+  if (act){
+    btns = e.status === "new"
+      ? h`<button class="btn btn-primary btn-sm" type="button" data-act="ack" data-id="${e._id}"${isBusy ? raw(" disabled") : ""}>Acknowledge</button><button class="btn btn-line btn-sm" type="button" data-act="resolve" data-id="${e._id}"${isBusy ? raw(" disabled") : ""}>Resolve</button>`
+      : e.status === "acknowledged"
+      ? h`<button class="btn btn-primary btn-sm" type="button" data-act="resolve" data-id="${e._id}"${isBusy ? raw(" disabled") : ""}>Resolve</button>`
+      : h`<button class="btn btn-line btn-sm" type="button" data-act="reopen" data-id="${e._id}"${isBusy ? raw(" disabled") : ""}>Reopen</button>`;
+  }
+  var go = inJob
+    ? h`<button class="btn btn-bracket btn-sm" type="button" data-act="jump" data-ix="${str(e.quoteIx)}">Show in timeline</button>`
+    : h`<a class="btn btn-bracket btn-sm" href="#job-${e.job}" data-ix="${str(e.quoteIx)}">Open job ${icon("arrow")}</a>`;
+  var evs = Array.isArray(e.events) ? e.events : [];
+  return h`<article class="esc" id="esc-${e._id}">
+    <div class="esc-top">
+      <span class="pill ${s.pill}">${icon("alert")}${s.label}</span>
+      <span class="esc-id">${e._id}</span>
+      <span class="pill ${t.pill}">${t.label}</span>
+      <span class="esc-time">Opened ${when(e.opened)}${e.raised ? " · raised " + when(e.raised) : ""}</span>
+    </div>
+    ${inJob ? "" : h`<div class="esc-who"><a href="#job-${e.job}" data-ix="${str(e.quoteIx)}">${j ? cname(j) : e.job}</a>${j ? h`<span>${str(j.title)} · ${e.job}${j.pm ? " · PM " + j.pm : ""}</span>` : ""}</div>`}
+    ${(e.reasons || []).length ? h`<div class="cats">${e.reasons.map(function(r){ return h`<span class="pill tag">${r}</span>`; })}</div>` : ""}
+    <blockquote class="quote">“${str(e.quote)}”${qi && j ? h`<cite>${cite(qi, j)}</cite>` : ""}</blockquote>
+    ${stepsOf(e)}
+    ${act ? h`<div class="note"><label for="note-${e._id}">Note for the team</label>
+        <textarea class="note-ta" id="note-${e._id}" data-id="${e._id}" rows="1" placeholder="Who is calling them back?">${str(e.note)}</textarea>
+        <span class="saved" id="saved-${e._id}" aria-live="polite"></span></div>`
+      : (str(e.note) ? h`<p class="note-ro"><span>Note</span>${e.note}</p>` : "")}
+    <div class="esc-bottom"><span class="esc-state">${state}</span>${btns}${go}</div>
+    ${evs.length ? h`<ol class="hist" aria-label="History">${evs.map(function(v){
+      var who = v.by ? personName(v.by) : str(v.actor);
+      return h`<li><span>${When(v.at)}</span> · ${str(v.text) || str(v.kind)}${who ? " by " + who : ""}</li>`; })}</ol>` : ""}
+  </article>`;
+}
+/* Where an escalation stands: flagged, the PM and owner texted, someone has it, done. */
+function stepsOf(e){
+  var evs = Array.isArray(e.events) ? e.events : [];
+  function last(kind){ for (var k = evs.length - 1; k >= 0; k--) if (evs[k] && evs[k].kind === kind) return evs[k]; return null; }
+  function who(v){ var w = v.by ? personName(v.by) : str(v.actor) || "someone"; return w.charAt(0).toUpperCase() + w.slice(1); }
+  var al = last("alerted"), res = e.status === "resolved" ? (last("resolved") || { at: e.statusAt }) : null;
+  var ack = e.status === "new" ? null : (last("acknowledged") || res);
+  var list = [
+    { k: "Flagged", sub: when(e.opened), done: true },
+    { k: "Texted", sub: al ? str(al.text).replace(/^Texted\s+/, "") : "", done: !!al },
+    { k: "Picked up", sub: ack ? who(ack) + ", " + when(ack.at) : e.status === "new" ? "Waiting " + since(e.opened) : "", done: !!ack },
+    { k: "Resolved", sub: res ? when(res.at) : "", done: !!res }
+  ];
+  var cur = -1;
+  if (e.status !== "resolved") for (var k = 0; k < list.length; k++) if (!list[k].done){ cur = k; break; }
+  return h`<ol class="steps" aria-label="Progress">${list.map(function(s, k){
+    return h`<li class="${s.done ? "done" : k === cur ? "cur" : ""}"><b>${s.k}</b>${s.sub ? h`<span>${s.sub}</span>` : ""}</li>`; })}</ol>`;
+}
+
+/* ---------------------------------------------------------------- daily check views */
+function viewCheck(){
+  var c = dailyCheck(), d = c.today, n = c.open.length, m = c.rolled.length, l1, l2;
+  if (c.stage === "off"){ l1 = "The daily check is off."; l2 = "Editors can turn it on in Settings."; }
+  else if (c.stage === "weekend"){ l1 = "No check today."; l2 = "It runs Monday to Friday."; }
+  else if (!c.rows.length){ l1 = "Nobody to check on today."; l2 = "No crews out, none starting " + dayName(c.next, d) + "."; }
+  else if (c.stage === "before"){ l1 = n ? plural(n, "customer") + " to reach today." : "Everyone has heard from us."; l2 = "PMs get their lists at " + hm(c.remind) + "."; }
+  else if (c.stage === "between"){ l1 = n ? plural(n, "customer") + " not reached yet." : "Everyone heard from us."; l2 = n ? (n === 1 ? "It goes" : "They go") + " to you at " + hm(c.escalate) + "." : "Nothing goes to you at " + hm(c.escalate) + "."; }
+  else { l1 = m ? plural(m, "customer") + " went to you." : "Everyone heard from us."; l2 = m ? "Nobody reached them by " + hm(c.escalate) + "." : "No roll-up today."; }
+  var sample = S.meta && S.meta.sample;
+  return h`${hero({ compact: true, l1: l1, l2: l2,
+    eyebrow: h`<span>Daily check · ${WD[d.getDay()]}, ${MO[d.getMonth()]} ${d.getDate()} · ${clock(c.now)}</span>${sample ? h`<span class="pill p-warn">Sample data</span>` : ""}`,
+    lede: "Every customer with a crew on site today, or a crew starting the next working day, should hear from someone on the team before the day is out. A text, an email or a call from anyone on the team counts." })}
+  <div class="wrap body">
+    <div class="ck-grid">
+      ${c.stage === "off" || c.stage === "weekend" ? "" : h`<div class="ck-w">${cardWatch(c)}</div>`}
+      <div class="ck-s">${cardSteps(c)}</div>
+      <div class="ck-r">${cardRules(c)}</div>
+    </div>
+  </div>`;
+}
+function cardSteps(c){
+  var head = h`<header class="card-h">${icon("clock")}<h2>Today's steps</h2><span class="aside">Weekdays</span></header>`;
+  if (c.stage === "off" || c.stage === "weekend")
+    return h`<section class="card">${head}<div class="card-b"><p class="empty">${c.stage === "off" ? "The daily check is turned off." : "The check runs Monday to Friday. The next one is " + WD[c.next.getDay()] + " at " + hm(c.remind) + "."}</p></div></section>`;
+  var past4 = c.stage !== "before", past5 = c.stage === "after";
+  var dropped = c.listed.filter(function(r){ return r.first; }).sort(function(a, b){ return byAt(a.first, b.first); });
+  var s1 = h`<li class="${past4 ? "" : "later"}"><span class="t">${hm(c.remind)}<small>${past4 ? "Sent" : "In " + dur(c.tRemind - c.now)}</small></span>
+    <div><h3>Lists to the project managers</h3>
+    ${!past4 ? h`<p>Each PM gets a text listing their customers nobody has reached today.${c.open.length ? " Right now that would be " + plural(c.open.length, "customer") + "." : ""}</p>`
+      : c.pmOrder.length ? h`<p>${c.pmOrder.length === 1 ? "One PM" : c.pmOrder.length + " PMs"} got a text with the customers nobody had reached.</p>
+        <div class="bubbles">${c.pmOrder.map(function(pm){ return bubble("To " + pm, hm(c.remind), msgRemind(pm, c.pms[pm], c)); })}</div>`
+      : h`<p>Nobody needed one. Every customer on the check had already heard from the team.</p>`}
+    </div></li>`;
+  var s2 = h`<li class="${c.stage === "between" ? "now" : past5 ? "" : "later"}"><span class="t">${c.stage === "between" ? "Now" : span(c.remind, c.escalate)}<small>${c.stage === "between" ? clock(c.now) : past5 ? "Closed" : "Upcoming"}</small></span>
+    <div><h3>Reached customers drop off</h3>
+    <p>Nothing to press. When anyone on the team texts, emails or calls the customer, they come off the list.</p>
+    ${dropped.length ? h`<ul class="drops">${dropped.map(function(r){ var i = r.first;
+        return h`<li>${icon("check")}<span>${teamName(str(i.by))} reached ${cname(r.j)} · ${i.ch === "call" ? "call" : chName(i).toLowerCase()}, ${clock(parseT(i.at))}</span></li>`; })}</ul>`
+      : past4 && c.listed.length ? h`<p>Nobody has come off the list yet.</p>` : ""}
+    </div></li>`;
+  var s3 = h`<li class="${past5 ? "" : "later"}"><span class="t">${hm(c.escalate)}<small>${past5 ? "Sent" : "In " + dur(c.tEsc - c.now)}</small></span>
+    <div><h3>Close-outs, and the roll-up to you</h3>
+    ${past5 ? h`<p>${c.pmOrder.length ? "Each PM who got a list gets a close-out. " : ""}${c.rolled.length ? "You get one text with everyone still not reached." : "Nobody was left, so nothing came to you."}</p>
+        <div class="bubbles">${c.pmOrder.map(function(pm){ return bubble("To " + pm, hm(c.escalate), msgClose(pm, c.pms[pm], c)); })}${c.rolled.length ? bubble("To you", hm(c.escalate), msgRoll(c.rolled, c)) : ""}</div>`
+      : c.open.length ? h`<p>If nobody reaches them first, this comes to you:</p><div class="bubbles">${bubble("To you", hm(c.escalate), msgRoll(c.open, c), true)}</div>`
+      : h`<p>Everyone on the check has heard from the team, so nothing will come to you.</p>`}
+    </div></li>`;
+  return h`<section class="card">${head}<div class="card-b"><ol class="tl">${s1}${s2}${s3}</ol></div></section>`;
+}
+function ckPill(r, c){
+  return r.first ? h`<span class="pill p-good">${icon("check")}Reached</span>`
+    : r.rolled ? h`<span class="pill p-crit">${icon("alert")}Went to you</span>`
+    : r.listed ? h`<span class="pill p-warn">${icon("clock")}On the ${hm(c.remind)} list</span>`
+    : h`<span class="pill">Not yet</span>`;
+}
+function cardWatch(c){
+  if (c.stage === "off" || c.stage === "weekend") return "";
+  return h`<section class="card"><header class="card-h">${icon("users")}<h2>On today's check</h2><span class="aside">${c.rows.length ? (c.rows.length - c.open.length) + " of " + c.rows.length + " reached" : "Nobody"}</span></header>
+    <div class="card-b">${c.rows.length ? c.rows.map(function(r){
+      var i = r.first;
+      var sub = i ? teamName(str(i.by)) + " · " + (i.ch === "call" ? "call" : chName(i).toLowerCase()) + ", " + clock(parseT(i.at)) + (r.rolled ? ", after the roll-up" : "")
+        : r.missedY ? "Nobody reached them " + c.yWord + " either" : "No text, email or call from the team yet";
+      return h`<a class="ckrow" href="#job-${r.j._id}"><span><span class="nm">${cname(r.j)}</span><span class="sub">${whyText(r, c)} · <span class="nw">PM ${r.pm || "not set"}</span></span><span class="sub">${sub}</span></span>${ckPill(r, c)}</a>`; })
+      : h`<p class="empty">No crews out today and none starting ${dayName(c.next, c.today)}.</p>`}</div></section>`;
+}
+function cardRules(c){
+  return h`<section class="card"><header class="card-h">${icon("gauge")}<h2>How the check works</h2></header><div class="card-b"><ul class="rules">
+    <li>${icon("users")}<span><b>Who is on it.</b> Customers with a crew on site today, and customers whose crew starts the next working day.</span></li>
+    <li>${icon("phone")}<span><b>What counts.</b> A text, an email or a call from anyone on the team. A call under five seconds doesn't count, and neither does the customer calling in.</span></li>
+    <li>${icon("bell")}<span><b>Who hears about it.</b> The job's PM at ${hm(c.remind)}, the owner at ${hm(c.escalate)}. A job without a PM goes to the office.</span></li>
+    <li>${icon("clock")}<span><b>When it runs.</b> Weekdays, each step once a day. If calls or email haven't synced, nothing goes out, so nobody gets a wrong list.</span></li>
+  </ul></div></section>`;
+}
+function cardCheck(){
+  var c = dailyCheck();
+  var aside = c.stage === "off" ? "Off" : c.stage === "weekend" ? "Weekdays" : c.stage === "before" ? "Lists at " + hm(c.remind) : c.stage === "between" ? "Roll-up at " + hm(c.escalate) : "Done for today";
+  var body;
+  if (c.stage === "off" || c.stage === "weekend" || !c.rows.length)
+    body = h`<p class="empty">${c.stage === "off" ? "The daily check is off." : c.stage === "weekend" ? "No check on weekends." : "No crews out today and none starting " + dayName(c.next, c.today) + "."}</p>`;
+  else {
+    var list = c.stage === "after" ? c.rolled.filter(function(r){ return !r.first; }) : c.open;
+    var lead = c.stage === "after"
+      ? (c.rolled.length ? plural(c.rolled.length, "customer") + " went to you at " + hm(c.escalate) + ". Nobody on the team reached them today." : "Everyone on today's check heard from the team.")
+      : (list.length ? plural(list.length, "customer") + " on today's check " + (list.length === 1 ? "hasn't" : "haven't") + " heard from anyone yet." : "Everyone on today's check has heard from the team.");
+    body = h`<p class="ck-lead">${lead}</p>${list.slice(0, 4).map(function(r){
+      return h`<a class="ckrow" href="#job-${r.j._id}"><span><span class="nm">${cname(r.j)}</span><span class="sub">${whyText(r, c)} · <span class="nw">PM ${r.pm || "not set"}</span></span></span>${ckPill(r, c)}</a>`; })}`;
+  }
+  return h`<section class="card"><header class="card-h">${icon("clock")}<h2>Daily check</h2><span class="aside">${aside}</span></header>
+    <div class="card-b">${body}</div>
+    <div class="card-f"><a class="btn btn-bracket btn-sm" href="#check">Open the daily check ${icon("arrow")}</a></div></section>`;
+}
+function checkBar(){
+  var c = dailyCheck(), n = c.open.length, m = c.rolled.filter(function(r){ return !r.first; }).length;
+  var go = h`<a class="btn btn-bracket btn-sm" href="#check">Daily check ${icon("arrow")}</a>`;
+  if (c.stage === "between" && n) return h`<div class="ck-bar">${icon("clock")}<span><b>Daily check.</b> ${plural(n, "customer")} on today's check ${n === 1 ? "hasn't" : "haven't"} heard from anyone on the team. ${n === 1 ? "It goes" : "They go"} to you at ${hm(c.escalate)}.</span>${go}</div>`;
+  if (c.stage === "after" && m) return h`<div class="ck-bar crit">${icon("alert")}<span><b>Daily check.</b> ${plural(m, "customer")} went to you at ${hm(c.escalate)}. Nobody on the team has reached them today.</span>${go}</div>`;
+  return "";
+}
+
+/* ---------------------------------------------------------------- jobs */
+function attention(x){
+  var o = x.d.open, r = 5;
+  if (o.some(function(e){ return e.severity === "high" && e.status === "new"; })) r = 0;
+  else if (o.some(function(e){ return e.severity === "high"; })) r = 1;
+  else if (o.some(function(e){ return e.status === "new"; })) r = 2;
+  else if (o.length) r = 3;
+  else if (x.d.waiting) r = 4;
+  return r * 1000 + (x.d.score === null ? 999 : x.d.score);
+}
+function jobFilters(J){
+  function n(f){ return J.filter(f).length; }
+  return [
+    ["all", "All", J.length],
+    ["risk", "At risk", n(function(x){ return x.d.score !== null && x.d.score < 40; })],
+    ["watch", "Watch", n(function(x){ return x.d.score !== null && x.d.score >= 40 && x.d.score < 65; })],
+    ["good", "Healthy", n(function(x){ return x.d.score !== null && x.d.score >= 65; })],
+    ["waiting", "Waiting on us", n(function(x){ return !!x.d.waiting; })],
+    ["escalated", "Escalated", n(function(x){ return x.d.open.length > 0; })]
+  ];
+}
+function jobMatches(x){
+  var f = S.filterJobs, s = x.d.score;
+  if (f === "risk" && !(s !== null && s < 40)) return false;
+  if (f === "watch" && !(s !== null && s >= 40 && s < 65)) return false;
+  if (f === "good" && !(s !== null && s >= 65)) return false;
+  if (f === "waiting" && !x.d.waiting) return false;
+  if (f === "escalated" && !x.d.open.length) return false;
+  var q = S.q.trim().toLowerCase();
+  if (q){
+    var hay = [cname(x.j), str(x.j.title), str(x.j._id), str(x.j.pm), str(x.j.scope)].join(" ").toLowerCase();
+    if (hay.indexOf(q) < 0) return false;
+  }
+  return true;
+}
+function sortJobs(list){
+  var k = S.sortJobs;
+  return list.slice().sort(function(a, b){
+    if (k === "low") return (a.d.score === null ? 999 : a.d.score) - (b.d.score === null ? 999 : b.d.score);
+    if (k === "recent") return byAt(b.d.last || { at: "" }, a.d.last || { at: "" });
+    if (k === "drop"){
+      var da = a.d.prev === null ? 0 : a.d.score - a.d.prev, db = b.d.prev === null ? 0 : b.d.score - b.d.prev;
+      return da - db;
+    }
+    return attention(a) - attention(b);
+  });
+}
+function jobRows(J){
+  var list = sortJobs(J.filter(jobMatches));
+  return { n: list.length, html: h`${list.map(function(x){
+    var j = x.j, d = x.d, s = d.score, b = s === null ? null : band(s), e = d.open[0];
+    return h`<tr data-href="#job-${j._id}">
+      <td class="nm"><a href="#job-${j._id}">${cname(j)}</a><span class="sub">${str(j.title)} · ${j._id}${j.pm ? " · " + j.pm : ""}</span></td>
+      <td data-label="Stage">${str(j.stage)}<span class="sub">${str(j.stageNote)}</span></td>
+      <td data-label="Score">${s === null ? h`<span class="dash">No score</span>` : h`<span class="scell"><b>${s}</b><span class="meter" title="${b.label}"><i style="width:${s}%;background:${raw(b.mark)}"></i></span></span>`}</td>
+      <td data-label="7 days">${trend(d)}</td>
+      <td data-label="Escalation">${e ? h`<span class="pill ${sev(e).pill}">${sev(e).label} · ${st(e).label}</span>` : h`<span class="dash">None</span>`}</td>
+      <td data-label="Waiting">${d.waiting ? waitPill(d.waiting.at) : h`<span class="dash">No</span>`}</td>
+      <td data-label="Last contact">${d.last ? h`<span class="lc">${icon(CH_ICON[d.last.ch] || "mail")}${When(d.last.at)}</span>` : h`<span class="dash">None</span>`}</td>
+    </tr>`; })}` };
+}
+function viewJobs(){
+  var J = jobsD(), F = jobFilters(J), rows = jobRows(J);
+  var risk = F[1][2], watch = F[2][2];
+  var sorts = [["attention", "Needs attention"], ["low", "Lowest score"], ["drop", "Biggest drop"], ["recent", "Most recent contact"]];
+  return h`${hero({ compact: true, eyebrow: "Jobs",
+    l1: plural(J.length, "active job"), l2: risk + " at risk, " + watch + " to watch",
+    lede: "Every job with a conversation in the last 30 days. The score follows the customer across calls, texts and emails, with the newest counting most." })}
+  <div class="wrap body">
+    <div class="tools">
+      <div class="chips" role="group" aria-label="Filter jobs">${F.map(function(f){
+        return h`<button class="chip" type="button" data-act="fjobs" data-v="${f[0]}" aria-pressed="${S.filterJobs === f[0] ? "true" : "false"}">${f[1]} <b>${f[2]}</b></button>`; })}</div>
+    </div>
+    <div class="tools">
+      <label class="search">${icon("search")}<input id="q" type="search" placeholder="Search customer, job or PM" value="${S.q}" aria-label="Search customer, job or PM" autocomplete="off"></label>
+      <label class="sort" for="sort">Sort <select id="sort" class="select">${sorts.map(function(s){ return h`<option value="${s[0]}"${S.sortJobs === s[0] ? raw(" selected") : ""}>${s[1]}</option>`; })}</select></label>
+    </div>
+    <section class="card">
+      <div class="tbl-wrap"><table class="jobs">
+        <thead><tr><th scope="col">Job</th><th scope="col">Stage</th><th scope="col">Score</th><th scope="col">7 days</th><th scope="col">Escalation</th><th scope="col">Waiting</th><th scope="col">Last contact</th></tr></thead>
+        <tbody id="job-rows">${rows.html}</tbody>
+      </table></div>
+      <p class="none" id="job-none"${rows.n ? raw(" hidden") : ""}>No jobs match. Clear the search or pick another filter.</p>
+    </section>
+  </div>`;
+}
+function updateJobRows(){
+  var tb = $("#job-rows"); if (!tb) return;
+  var rows = jobRows(jobsD());
+  tb.innerHTML = rows.html[RAW];
+  var none = $("#job-none"); if (none) none.hidden = rows.n > 0;
+}
+
+/* ---------------------------------------------------------------- job detail */
+function viewJob(id){
+  var x = jobById(id);
+  var crumbs = h`<a href="#jobs">Jobs</a><span class="sep">/</span><span>${id}</span>`;
+  if (!x) return h`${hero({ compact: true, eyebrow: crumbs, l1: "Job not found", l2: id, lede: "It may have been removed from this workspace." })}<div class="wrap body"><div><a class="btn btn-line" href="#jobs">Back to jobs</a></div></div>`;
+  var j = x.j, d = x.d, s = d.score;
+  var meta = h`<div class="hero-pills">
+    <span class="pill">${str(j.stage) || "Job"}</span>${j.stageNote ? h`<span class="hero-note">${j.stageNote}</span>` : ""}
+    ${s !== null ? bandPill(s, true) : ""}
+    ${d.open.length ? h`<span class="pill p-crit">${icon("alert")}${plural(d.open.length, "open escalation")}</span>` : ""}
+  </div>`;
+  return h`${hero({ compact: true, eyebrow: crumbs, l1: cname(j), l2: str(j.title), meta: meta, lede: str(j.scope) })}
+  <div class="wrap body">
+    <div class="detail">
+      <div class="d-a stack">${d.open.map(function(e){ return escCard(e, true); })}${cardCustomer(x)}</div>
+      <div class="d-s stack">${cardScore(x)}${cardExplain(x)}</div>
+      <div class="d-t">${timeline(x)}</div>
+    </div>
+  </div>`;
+}
+function cardCustomer(x){
+  var j = x.j, c = j.customer || {}, d = x.d;
+  var contact = [str(c.phone), str(c.email)].filter(Boolean).join(" · ");
+  var rows = [
+    ["Job", str(j.title), j.value ? money(j.value) : ""],
+    ["Stage", str(j.stage), str(j.stageNote)],
+    ["Crew", str(j.crew), j.pm ? "PM " + j.pm : ""],
+    ["Customer since", str(c.since), c.jobs ? plural(c.jobs, "job") + " · " + money(c.lifetime) : "No jobs yet"],
+    ["Last contact", d.last ? chName(d.last) + ", " + when(d.last.at) : "None", d.waiting ? "Waiting " + since(d.waiting.at) : "Replied"]
+  ];
+  return h`<section class="card recog" aria-label="Customer">
+    <div class="recog-top">
+      <span class="ring">${icon("phone")}</span>
+      <span class="rt"><span class="nm">${cname(j)}</span><span class="sub">${contact}</span></span>
+      ${c.note ? h`<span class="right"><span class="pill">${c.note}</span></span>` : ""}
+    </div>
+    <div class="kvs">${rows.map(function(r){ return h`<div class="kv"><span class="k">${r[0]}</span><span class="v">${r[1]}</span><span class="r">${r[2]}</span></div>`; })}</div>
+  </section>`;
+}
+function cardScore(x){
+  var d = x.d, s = d.score;
+  if (s === null) return h`<section class="card"><div class="card-b"><p class="empty">No scored conversations yet. The score appears after the customer's first call, text or email.</p></div></section>`;
+  var b = band(s), delta = d.prev === null ? null : s - d.prev;
+  var dtext = delta === null ? "No score a week ago" : delta === 0 ? "Same as a week ago" : (delta < 0 ? "Down " + (-delta) : "Up " + delta) + " from a week ago";
+  return h`<section class="card"><div class="card-b">
+    <p class="lbl" style="margin-top:2px">Sentiment score</p>
+    <div class="score-head">
+      <span class="score-big">${s}<small>/100</small></span>
+      <span class="score-meta">${bandPill(s, false)}<span class="trend ${delta === null || delta === 0 ? "fl" : delta < 0 ? "dn" : "up"}">${delta === null || delta === 0 ? "" : icon(delta < 0 ? "down" : "up")}${dtext}</span></span>
+    </div>
+    <span class="meter big" aria-hidden="true"><i style="width:${s}%;background:${raw(b.mark)}"></i></span>
+    ${chart(x)}
+  </div></section>`;
+}
+function chart(x){
+  var pts = x.d.series; if (!pts.length) return "";
+  /* A small viewBox keeps marks near their spec on a phone (dots >= 8px); strokes do not
+     scale; labels are HTML so they stay legible at any width. */
+  var W = 360, H = 124, L = 5, R = 26, T = 7, B = 7;
+  var t1 = NOW().getTime(), t0 = Math.min(pts[0].t.getTime() - DAY / 2, t1 - 14 * DAY);
+  function X(t){ return L + (t - t0) / (t1 - t0) * (W - L - R); }
+  function Y(v){ return T + (1 - v / 100) * (H - T - B); }
+  function f(n){ return Math.round(n * 10) / 10; }
+  function pc(n, of){ return Math.round(n / of * 1000) / 10; }
+  var line = "M" + f(X(pts[0].t.getTime())) + "," + f(Y(pts[0].v));
+  for (var k = 1; k < pts.length; k++) line += "H" + f(X(pts[k].t.getTime())) + "V" + f(Y(pts[k].v));
+  line += "H" + f(X(t1));
+  var area = line + "V" + f(Y(0)) + "H" + f(X(pts[0].t.getTime())) + "Z";
+  var d0 = new Date(t0), d1 = new Date(t1), mid = new Date((t0 + t1) / 2), end = pts[pts.length - 1];
+  function tip(p){ return chName(p.ix) + ", " + when(p.ix.at) + ": scored " + p.ix.score + ", job score " + Math.round(p.v); }
+  return h`<figure class="chart">
+    <div class="plot">
+      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Score over the last ${Math.round((t1 - t0) / DAY)} days. Now ${x.d.score}.">
+        ${[40, 65].map(function(v){ return h`<line class="sp-grid" x1="${L}" x2="${W - R}" y1="${f(Y(v))}" y2="${f(Y(v))}" vector-effect="non-scaling-stroke"></line>`; })}
+        <line class="sp-axis" x1="${L}" x2="${W - R}" y1="${f(Y(0))}" y2="${f(Y(0))}" vector-effect="non-scaling-stroke"></line>
+        <path class="sp-area" d="${area}"></path>
+        <path class="sp-line" d="${line}" vector-effect="non-scaling-stroke"></path>
+        ${pts.map(function(p){ return h`<circle class="sp-dot" cx="${f(X(p.t.getTime()))}" cy="${f(Y(p.ix.score))}" r="4" style="fill:${raw(band(p.ix.score).mark)}" vector-effect="non-scaling-stroke"></circle>`; })}
+        <circle class="sp-end" cx="${f(X(t1))}" cy="${f(Y(end.v))}" r="4.5" vector-effect="non-scaling-stroke"></circle>
+        ${pts.map(function(p){ var t = tip(p); return h`<circle class="sp-hit" cx="${f(X(p.t.getTime()))}" cy="${f(Y(p.ix.score))}" r="11" tabindex="0" role="button" data-act="jump" data-ix="${str(p.ix.id)}" data-tip="${t}" aria-label="${t}"></circle>`; })}
+      </svg>
+      <span class="ylab" style="top:${pc(Y(65), H)}%">65</span>
+      <span class="ylab" style="top:${pc(Y(40), H)}%">40</span>
+    </div>
+    <div class="xlabs" aria-hidden="true">
+      <span style="left:${pc(L, W)}%">${MO[d0.getMonth()]} ${d0.getDate()}</span>
+      <span class="mid" style="left:${pc(X(mid.getTime()), W)}%">${MO[mid.getMonth()]} ${mid.getDate()}</span>
+      <span style="right:${pc(R, W)}%">${MO[d1.getMonth()]} ${d1.getDate()}</span>
+    </div>
+    <figcaption class="chart-cap"><span><i class="k-line"></i>Job score</span><span><i class="k-dot"></i>One conversation, coloured by its own score</span></figcaption>
+  </figure>`;
+}
+function cardExplain(x){
+  var d = x.d, s = d.score; if (s === null) return "";
+  var cut = NOW().getTime() - 14 * DAY;
+  var recent = d.ixs.filter(function(i){ return parseT(i.at).getTime() >= cut; });
+  var scoredIx = d.series.map(function(p){ return p.ix; });
+  var latest = scoredIx[scoredIx.length - 1];
+  var U = { low: 1, medium: 2, high: 3 }, LV = ["", "Low", "Medium", "High"], LC = ["", "var(--good)", "var(--warn)", "var(--crit)"];
+  var last3 = scoredIx.slice(-3), urg = 1;
+  last3.forEach(function(i){ urg = Math.max(urg, U[i.urgency] || 1); });
+  var newE = d.open.filter(function(e){ return e.status === "new"; })[0];
+  var res = newE ? 3 : (d.open.length || d.waiting) ? 2 : 1;
+  var resWhy = newE ? "Escalation " + newE._id + " not picked up" : d.open.length ? "Escalation " + d.open[0]._id + " acknowledged, still open" : d.waiting ? "Waiting on a reply for " + since(d.waiting.at) : "Nothing open";
+  function hasTag(re){ return recent.some(function(i){ return (i.tags || []).some(function(t){ return re.test(t); }); }); }
+  var neg = recent.some(function(i){ return i.review === "negative"; }), pos = recent.some(function(i){ return i.review === "positive"; });
+  var moneyT = hasTag(/chargeback|refund|payment hold/i);
+  var rev = neg ? 3 : moneyT ? 2 : 1;
+  var revWhy = neg ? "Mentions leaving a review" : moneyT ? "Payment on hold or a chargeback mentioned" : pos ? "Praised the work" : "No talk of reviews or refunds";
+  var rows = [
+    { n: "Tone", v: str(latest.tone) || "Neutral", w: latest.score, c: band(latest.score).mark, why: "Latest conversation: " + chName(latest).toLowerCase() + ", " + when(latest.at) + ", scored " + latest.score },
+    { n: "Urgency", v: LV[urg], w: urg / 3 * 100, c: LC[urg], why: "Highest of the last " + plural(last3.length, "conversation") },
+    { n: "Resolution risk", v: LV[res], w: res / 3 * 100, c: LC[res], why: resWhy },
+    { n: "Review risk", v: LV[rev], w: rev / 3 * 100, c: LC[rev], why: revWhy }
+  ];
+  var counts = {};
+  recent.forEach(function(i){ if (typeof i.score === "number") (i.tags || []).forEach(function(t){ counts[t] = (counts[t] || 0) + 1; }); });
+  var cats = Object.keys(counts).sort(function(a, b){ return counts[b] - counts[a] || (a < b ? -1 : 1); });
+  var behind = [];
+  recent.slice().reverse().forEach(function(i){
+    (Array.isArray(i.lines) ? i.lines : []).forEach(function(l){ if (l && Array.isArray(l.f) && l.f.length && behind.length < 4) behind.push({ i: i, l: l }); });
+  });
+  return h`<section class="card">
+    <header class="card-h">${icon("eye")}<h2>Why it's ${s}</h2><span class="aside">Score explainer</span></header>
+    <div class="card-b">
+      <ul class="rubric">${rows.map(function(r){ return h`<li><span class="rn">${r.n}</span><span class="rv">${r.v}</span><span class="u" aria-hidden="true"><i style="width:${Math.round(r.w)}%;background:${raw(r.c)}"></i></span><span class="rw">${r.why}</span></li>`; })}</ul>
+      ${cats.length ? h`<p class="lbl">Categories, last 14 days</p><div class="cats">${cats.map(function(t){ return h`<span class="pill tag ${tagCls(t)}">${t}${counts[t] > 1 ? " × " + counts[t] : ""}</span>`; })}</div>` : ""}
+      ${behind.length ? h`<p class="lbl">Lines behind the score</p><div class="behind">${behind.map(function(b){
+        return h`<button class="lb" type="button" data-act="jump" data-ix="${str(b.i.id)}">“${str(b.l.x)}”<small>${cite(b.i, x.j)}</small></button>`; })}</div>` : ""}
+      <p class="how">The score starts at the first conversation's score. Each new call, text or email moves it halfway toward that conversation's own score, so the latest ones count most. Under 40 is at risk, 40 to 64 is watch, 65 and up is healthy.</p>
+    </div>
+  </section>`;
+}
+function timeline(x){
+  var j = x.j, ixs = x.d.ixs.slice().reverse(), groups = [], cur = null;
+  var escAt = {};
+  x.d.all.forEach(function(e){ if (e.openedIx) escAt[e.openedIx] = e; });
+  ixs.forEach(function(i){
+    var d = parseT(i.at), key = d.toDateString();
+    if (!cur || cur.key !== key){ cur = { key: key, d: d, items: [] }; groups.push(cur); }
+    cur.items.push(i);
+  });
+  return h`<h2 class="sec-title">Every call, text and email <span>${ixs.length}</span></h2>
+    ${groups.map(function(g){ return h`<section class="tl-group"><h3 class="tl-day">${dayHead(g.d)}</h3>${g.items.map(function(i){ return ixCard(i, j, escAt[i.id]); })}</section>`; })}`;
+}
+function ixTitle(i, j){
+  if (i.ch === "call") return i.dir === "in" ? "Inbound call" : "Outbound call";
+  return (i.ch === "text" ? "Text from " : "Email from ") + (i.dir === "in" ? first(j) : str(i.by) || "your team");
+}
+function ixMeta(i){
+  var bits = [clock(parseT(i.at))];
+  if (i.ch === "call"){ if (i.dur) bits.push(mmss(i.dur)); if (i.by) bits.push("with " + i.by); }
+  if (i.ch === "email" && i.subj) bits.push("“" + i.subj + "”");
+  return bits.join(" · ");
+}
+function ixCard(i, j, esc0){
+  var scored = typeof i.score === "number", lines = Array.isArray(i.lines) ? i.lines : [];
+  var cls = i.ch === "call" ? " c-call" : i.ch === "text" ? " c-text" : "";
+  return h`<article class="ixc${scored ? "" : " out"}" id="ix-${str(i.id)}">
+    <header class="ixc-h">
+      <span class="ic">${icon(CH_ICON[i.ch] || "mail")}</span>
+      <span class="t1">${ixTitle(i, j)}</span>
+      <span class="t2">${ixMeta(i)}</span>
+      <span class="sc">${esc0 ? h`<span class="pill ${st(esc0).pill}">${esc0._id} opened here</span>` : ""}${scored ? h`Score ${scorePill(i.score)}` : h`<span class="pill">Your reply</span>`}</span>
+    </header>
+    ${i.summary ? h`<p class="ixc-s">${i.summary}</p>` : ""}
+    <div class="lines">${lines.map(function(l){
+      if (!l) return "";
+      var us = l.s !== "c", fl = Array.isArray(l.f) && l.f.length;
+      return h`<div class="ln${cls}${fl ? " fl" : ""}">
+        ${cls ? h`<span class="tt">${str(l.t)}</span>` : ""}
+        <span class="who${us ? " us" : ""}">${us ? str(l.s) : first(j)}</span>
+        <span class="x">${str(l.x)}${fl ? h`<span class="tags">${l.f.map(function(t){ return h`<span class="pill tag ${tagCls(t)}">${t}</span>`; })}</span>` : ""}</span>
+      </div>`; })}</div>
+    ${scored ? h`<footer class="ixc-f"><span class="pill">${str(i.tone) || "Neutral"}</span>${(i.tags || []).map(function(t){ return h`<span class="pill tag ${tagCls(t)}">${t}</span>`; })}</footer>` : ""}
+  </article>`;
+}
+
+/* ---------------------------------------------------------------- settings */
+function viewWorkspace(){
+  var m = S.meta || {}, st0 = S.settings || {}, admin = S.canAdmin && !!S.db;
+  var J = jobsD(), dis = admin ? "" : raw(" disabled");
+  var notify = st0.notify || {}, digest = st0.digest || {}, ck0 = st0.check || {};
+  var thr = typeof st0.threshold === "number" ? st0.threshold : 40, vis = st0.visibility || {};
+  function chk(path, on, label){ var id = "set-" + path.replace(/\./g, "-"); return h`<label class="check" for="${id}"><input type="checkbox" id="${id}" data-set="${path}"${on ? raw(" checked") : ""}${dis}>${label}</label>`; }
+  var conns = Array.isArray(m.connections) ? m.connections : [];
+  var team = Array.isArray(m.team) ? m.team : [];
+  var keys = ["risk", "watch", "good"], counts = { risk: 0, watch: 0, good: 0 };
+  J.forEach(function(x){ if (x.d.score !== null) counts[bandKey(x.d.score)]++; });
+  return h`${hero({ compact: true, eyebrow: "Workspace", l1: "Settings", l2: str(m.name) || "Your workspace",
+    lede: "Where conversations come from, who hears about an escalation, and who on the team can see what." })}
+  <div class="wrap body">
+    ${admin ? "" : h`<p class="note-bar">Only editors can change these settings. You can see how the workspace is set up.</p>`}
+    <div class="grid g-7-5">
+      <div class="stack">
+        <section class="card">
+          <header class="card-h">${icon("plug")}<h2>Connections</h2><span class="aside">${m.sample ? "Sample" : plural(conns.length, "source")}</span></header>
+          <div class="card-b">${conns.length ? conns.map(function(c){
+            var ic = c.key === "phone" ? "phone" : c.key === "texts" ? "text" : "mail", on = c.status === "connected";
+            return h`<div class="conn"><span class="ch-ic">${icon(ic)}</span>
+              <span><span class="nm">${str(c.label)}</span><span class="sub" style="display:block">${str(c.provider)}${c.detail ? " · " + c.detail : ""}</span></span>
+              <span class="pills"><span class="pill ${on ? "p-good" : ""}">${on ? icon("check") : ""}${on ? "Connected" : "Not connected"}</span>${c.since ? h`<span class="pill">Since ${(function(d){ return d ? MO[d.getMonth()] + " " + d.getDate() : ""; })(parseT(c.since + "T00:00"))}</span>` : ""}</span></div>`; })
+            : h`<p class="empty">Nothing connected yet.</p>`}
+            <p class="hint" style="margin-top:12px">Phone lines and inboxes are connected for you during setup. Nothing already in place gets replaced.</p>
+          </div>
+        </section>
+        <section class="card">
+          <header class="card-h">${icon("bell")}<h2>Escalations and alerts</h2></header>
+          <div class="card-b">
+            <div class="field"><p class="field-t">When an escalation opens</p>
+              <div class="checks">${chk("notify.pm", notify.pm !== false, "Text the job's PM")}${chk("notify.sms", notify.sms !== false, "Text the owner")}${chk("notify.email", notify.email !== false, "Email the owner")}</div></div>
+            <div class="field"><p class="field-t">Daily check</p>
+              <div class="inline">${chk("check.on", ck0.on !== false, "Text each PM their customers nobody has reached at")}
+                <select class="select" id="set-check-remind" data-set="check.remind" aria-label="Time the PMs get their lists"${dis}>${["15:00", "15:30", "16:00", "16:30"].map(function(v){ return h`<option value="${v}"${v === (str(ck0.remind) || "16:00") ? raw(" selected") : ""}>${hm(v)}</option>`; })}</select></div>
+              <div class="inline"><label for="set-check-escalate">Send whoever is left to the owner at</label>
+                <select class="select" id="set-check-escalate" data-set="check.escalate"${dis}>${["16:30", "17:00", "17:30", "18:00"].map(function(v){ return h`<option value="${v}"${v === (str(ck0.escalate) || "17:00") ? raw(" selected") : ""}>${hm(v)}</option>`; })}</select></div>
+              <p class="hint">Weekdays. Covers customers with a crew on site that day and customers whose crew starts the next working day.</p></div>
+            <div class="field"><p class="field-t">Open an escalation when</p>
+              <div class="inline"><label for="set-threshold">a job's score drops below</label>
+                <select class="select" id="set-threshold" data-set="threshold" data-num="1"${dis}>${[30, 35, 40, 45, 50].map(function(v){ return h`<option value="${v}"${v === thr ? raw(" selected") : ""}>${v}</option>`; })}</select></div>
+              <div class="inline"><label for="set-keywords">or a customer mentions</label>
+                <input class="text" id="set-keywords" data-set="keywords" type="text" value="${str(st0.keywords)}"${dis}></div>
+              <p class="hint">Separate words with commas.</p></div>
+            <div class="field"><p class="field-t">Daily digest</p>
+              <div class="inline">${chk("digest.on", digest.on !== false, "Send a morning summary at")}
+                <select class="select" id="set-digest-time" data-set="digest.time" aria-label="Digest time"${dis}>${["06:00", "07:00", "08:00", "09:00"].map(function(v){ return h`<option value="${v}"${v === (digest.time || "07:00") ? raw(" selected") : ""}>${(+v.slice(0, 2)) + ":00 AM"}</option>`; })}</select></div></div>
+          </div>
+        </section>
+        <section class="card">
+          <header class="card-h">${icon("users")}<h2>Team and visibility</h2><span class="aside">${m.sample ? "Sample team" : plural(team.length + 1, "person", "people")}</span></header>
+          <div class="card-b"><div class="tbl-wrap"><table class="team">
+            <thead><tr><th scope="col">Person</th><th scope="col">Role</th><th scope="col">Can see</th></tr></thead>
+            <tbody>
+              <tr><td><span class="nm">You</span></td><td>Owner</td><td>Everything</td></tr>
+              ${team.map(function(t){ var id = "vis-" + str(t.key); return h`<tr><td><span class="nm">${str(t.name)}</span></td><td>${str(t.role)}</td>
+                <td><select class="select" id="${id}" data-set="visibility.${str(t.key)}" aria-label="What ${str(t.name)} can see"${dis}>${VIS.map(function(v){ return h`<option value="${v[0]}"${vis[t.key] === v[0] ? raw(" selected") : ""}>${v[1]}</option>`; })}</select></td></tr>`; })}
+            </tbody></table></div>
+            <p class="hint" style="margin-top:12px">Call audio and transcripts follow the same limits as the jobs they belong to.</p>
+          </div>
+        </section>
+      </div>
+      <div class="stack">
+        <section class="card">
+          <header class="card-h">${icon("gauge")}<h2>How scores work</h2></header>
+          <div class="card-b">
+            <div class="bands">${keys.map(function(k){ return h`<div class="band-row"><i style="background:${raw(BANDS[k].mark)}"></i><span><span class="nm">${BANDS[k].label}</span> <span class="sub">${BANDS[k].range}</span></span><span class="sub">${plural(counts[k], "job")}</span></div>`; })}</div>
+            <p class="how">Every call, text and email from a customer gets its own score. A job's score starts at the first one and moves halfway toward each new one, so a bad week shows up fast and a fixed problem shows up too.</p>
+          </div>
+        </section>
+        <section class="card">
+          <header class="card-h">${icon("mail")}<h2>Tomorrow's digest</h2><span class="aside">${digest.on === false ? "Off" : (+(digest.time || "07:00").slice(0, 2)) + ":00 AM"}</span></header>
+          <div class="card-b">${digestPreview(J, digest.on === false)}</div>
+        </section>
+      </div>
+    </div>
+  </div>`;
+}
+function digestPreview(J, off){
+  if (off) return h`<p class="empty">The morning summary is off. Turn it on under Escalations and alerts.</p>`;
+  var open = S.escs.filter(isOpen).sort(rankEsc), fresh = open.filter(function(e){ return e.status === "new"; });
+  var waiting = J.filter(function(x){ return x.d.waiting; }).sort(function(a, b){ return byAt(a.d.waiting, b.d.waiting); });
+  var low = J.filter(function(x){ return x.d.score !== null; }).sort(function(a, b){ return a.d.score - b.d.score; }).slice(0, 3);
+  var top = open[0], tj = top ? jobById(top.job) : null;
+  return h`<div class="digest">
+    <p><b>${plural(open.length, "escalation")} open</b>${fresh.length ? ", " + fresh.length + " not picked up" : ""}.</p>
+    ${top && tj ? h`<p>Most urgent: <b>${cname(tj.j)}</b>, ${str(tj.j.title).toLowerCase()}. “${str(top.quote)}”</p>` : ""}
+    <p><b>${plural(waiting.length, "customer")}</b> waiting on a reply${waiting.length ? h`, longest ${cname(waiting[0].j)} at ${since(waiting[0].d.waiting.at)}` : ""}.</p>
+    ${low.length ? h`<p>Lowest scores: ${low.map(function(x, k){ return h`${k ? ", " : ""}<b>${cname(x.j)}</b> ${x.d.score}`; })}.</p>` : ""}
+  </div>`;
+}
+
+/* ---------------------------------------------------------------- gate, loading, empty */
+function viewGate(kind){
+  var t = {
+    nohost: ["Open this in claude.ai", "This workspace loads through claude.ai. Open the link while you are signed in."],
+    signedout: ["Sign in", "Sign in to claude.ai with your company account, then open this link again."],
+    revoked: ["Access changed", "Your access to this workspace changed while it was open. Reload the page to continue."],
+    error: ["Workspace unavailable", "The workspace could not be loaded. Reload the page to try again."]
+  }[kind] || ["Workspace unavailable", "Reload the page to try again."];
+  return h`<div class="wrap"><div class="gate"><div class="gate-col">${MARK}<h1>${t[0]}</h1><p>${t[1]}</p></div></div></div>`;
+}
+function viewLoading(){
+  return h`<section class="hero"><div class="frame" aria-hidden="true"></div><div class="wrap">
+    <p class="eyebrow">Loading workspace</p><h1 class="display">Reading your jobs<span class="l2">One moment.</span></h1>
+    ${S.slow ? h`<p class="lede">The workspace can't be reached yet. Your jobs appear here as soon as it answers.</p>` : ""}
+  </div></section><div class="wrap body"><div class="grid g-7-5"><div class="skel"></div><div class="skel"></div></div></div>`;
+}
+function viewEmpty(){
+  return hero({ compact: true, eyebrow: str(S.meta && S.meta.name) || "Workspace", l1: "No jobs yet.", l2: "Connect a line or an inbox.",
+    lede: "Jobs show up here once a phone line or an email inbox is connected and the first conversations come in. Setup is done for you." });
+}
+
+/* ---------------------------------------------------------------- render */
+function route(){
+  var hs = location.hash.replace(/^#/, "");
+  if (hs.indexOf("job-") === 0) return { v: "job", id: hs.slice(4) };
+  if (hs === "escalations" || hs === "check" || hs === "jobs" || hs === "workspace") return { v: hs };
+  return { v: "overview" };
+}
+function keepFocus(){ var a = document.activeElement; return !!a && (a.classList.contains("note-ta") || a.id === "q" || a.id === "set-keywords" || a.tagName === "SELECT"); }
+function renderNav(r){
+  r = r || route();
+  var cur = r.v === "job" ? "jobs" : r.v;
+  Array.prototype.forEach.call(document.querySelectorAll(".tabs a"), function(a){
+    if (a.getAttribute("data-tab") === cur) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+  });
+  var n = S.escs.filter(function(e){ return e.status === "new"; }).length, b = $("#n-esc");
+  b.textContent = n ? String(n) : ""; b.hidden = !n;
+  if (n) b.setAttribute("aria-label", n + " new"); else b.removeAttribute("aria-label");
+  var c = ready() ? dailyCheck() : null, ck = $("#n-ck");
+  var cn = !c ? 0 : c.stage === "between" ? c.open.length : c.stage === "after" ? c.rolled.filter(function(x){ return !x.first; }).length : 0;
+  ck.textContent = cn ? String(cn) : ""; ck.hidden = !cn;
+  if (cn) ck.setAttribute("aria-label", cn + " not reached"); else ck.removeAttribute("aria-label");
+  var ws = $("#ws");
+  if (S.meta){ $("#ws-name").textContent = str(S.meta.name) || "Workspace"; ws.hidden = false; ws.querySelector("i").hidden = !S.meta.sample; } else ws.hidden = true;
+  $("#foot-sample").textContent = S.meta && S.meta.sample ? "Sample workspace. Every customer, job and conversation here is made up." : "";
+}
+/* A timer, not requestAnimationFrame: frames pause in hidden or offscreen frames, and a
+   snapshot that lands then should still show up the moment the page is looked at. */
+function schedule(){ if (raf) return; raf = setTimeout(function(){ raf = 0; render(); }, 0); }
+function render(){
+  var r = route();
+  renderNav(r);
+  if (keepFocus()){ pendingRender = true; return; }
+  pendingRender = false;
+  var out;
+  if (S.fail) out = viewGate(S.fail);
+  else if (!ready()) out = viewLoading();
+  else if (!S.jobs.length) out = viewEmpty();
+  else if (r.v === "job") out = viewJob(r.id);
+  else if (r.v === "escalations") out = viewEscalations();
+  else if (r.v === "check") out = viewCheck();
+  else if (r.v === "jobs") out = viewJobs();
+  else if (r.v === "workspace") out = viewWorkspace();
+  else out = viewOverview();
+  $("#app").innerHTML = out[RAW];
+  var key = location.hash || "#overview";
+  if (key !== lastKey){ lastKey = key; if (!S.focusIx) window.scrollTo(0, 0); }
+  if (S.focusIx && r.v === "job"){ var ix = S.focusIx; S.focusIx = null; setTimeout(function(){ jumpIx(ix); }, 30); }
+}
+function jumpIx(id){
+  if (!id) return;
+  var el = document.getElementById("ix-" + id); if (!el) return;
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  el.scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" });
+  el.classList.add("flash");
+  setTimeout(function(){ el.classList.remove("flash"); }, 1800);
+}
+function toast(msg, ms){
+  var t = $("#toast"); t.textContent = msg; t.hidden = false;
+  clearTimeout(toast.timer); toast.timer = setTimeout(function(){ t.hidden = true; }, ms || 2400);
+}
+
+/* ---------------------------------------------------------------- writes */
+function setStatus(id, status){
+  var e = S.escs.filter(function(x){ return x._id === id; })[0];
+  if (!e || busy[id] || !S.db) return;
+  busy[id] = true; render();
+  var at = isoLocal(NOW());
+  var text = status === "new" ? "Reopened" : status === "acknowledged" ? "Acknowledged" : "Resolved";
+  var events = (Array.isArray(e.events) ? e.events : []).map(function(v){ return Object.assign({}, v); })
+    .concat([{ at: at, kind: status, text: text, actor: null, by: S.myId || null }]);
+  S.db.collection("escalations").doc(id).update({ status: status, statusAt: at, statusBy: S.myId || null, actor: null, events: events })
+    .then(function(){ toast(id + " " + text.toLowerCase()); }, function(err){
+      if (err && err.code === "invalid_argument"){ S.readOnly = true; toast("You can read this workspace but not change it."); }
+      else toast("That change didn't save. Try again.");
+    })
+    .then(function(){ busy[id] = false; render(); });
+}
+var noteTimers = {}, noteBusy = {}, noteNext = {};
+function queueNote(id, v){
+  clearTimeout(noteTimers[id]);
+  noteTimers[id] = setTimeout(function(){ saveNote(id, v); }, 800);
+}
+function saveNote(id, v){
+  if (!S.db) return;
+  var e = S.escs.filter(function(x){ return x._id === id; })[0];
+  if (e && str(e.note) === v) return;
+  if (noteBusy[id]){ noteNext[id] = v; return; }
+  noteBusy[id] = true;
+  var flag = document.getElementById("saved-" + id);
+  S.db.collection("escalations").doc(id).update({ note: v }).then(function(){
+    if (flag) flag.textContent = "Saved";
+  }, function(err){
+    if (err && err.code === "invalid_argument") S.readOnly = true;
+    if (flag) flag.textContent = "Not saved. Check your access and try again.";
+  }).then(function(){
+    noteBusy[id] = false;
+    if (noteNext[id] !== undefined){ var n = noteNext[id]; delete noteNext[id]; if (n !== v) saveNote(id, n); }
+  });
+}
+var settingsQ = Promise.resolve();
+function saveSetting(path, v){
+  if (!S.db || !S.canAdmin) return;
+  var parts = path.split("."), patch = {}, c = patch;
+  parts.forEach(function(p, k){ if (k === parts.length - 1) c[p] = v; else { c[p] = {}; c = c[p]; } });
+  settingsQ = settingsQ.then(function(){
+    var ref = S.db.doc("workspace/settings");
+    return (S.settings ? ref.update(patch) : ref.set(patch)).then(function(){ toast("Saved"); }, function(err){
+      toast(err && err.code === "invalid_argument" ? "Only editors can change settings." : "That change didn't save. Try again.");
+    });
+  });
+}
+
+/* ---------------------------------------------------------------- events */
+document.addEventListener("click", function(ev){
+  var t = ev.target;
+  var fj = t.closest("[data-fjobs]"); if (fj) S.filterJobs = fj.getAttribute("data-fjobs");
+  var link = t.closest("a[data-ix]");
+  if (link && link.getAttribute("data-ix")){
+    S.focusIx = link.getAttribute("data-ix");
+    if (link.getAttribute("href") === location.hash){ ev.preventDefault(); var ix = S.focusIx; S.focusIx = null; jumpIx(ix); }
+  }
+  var a = t.closest("[data-act]");
+  if (a){
+    var act = a.getAttribute("data-act"), id = a.getAttribute("data-id"), v = a.getAttribute("data-v");
+    if (act === "ack") setStatus(id, "acknowledged");
+    else if (act === "resolve") setStatus(id, "resolved");
+    else if (act === "reopen") setStatus(id, "new");
+    else if (act === "fjobs"){ S.filterJobs = v; render(); }
+    else if (act === "fesc"){ S.filterEsc = v; render(); }
+    else if (act === "jump") jumpIx(a.getAttribute("data-ix"));
+    return;
+  }
+  var tr = t.closest("tr[data-href]");
+  if (tr && !t.closest("a,button,input,select,textarea")) location.hash = tr.getAttribute("data-href");
+});
+document.addEventListener("keydown", function(ev){
+  if ((ev.key === "Enter" || ev.key === " ") && ev.target.classList && ev.target.classList.contains("sp-hit")){
+    ev.preventDefault(); jumpIx(ev.target.getAttribute("data-ix"));
+  }
+});
+document.addEventListener("input", function(ev){
+  var t = ev.target;
+  if (t.id === "q"){ S.q = t.value; updateJobRows(); }
+  else if (t.classList.contains("note-ta")) queueNote(t.getAttribute("data-id"), t.value);
+});
+document.addEventListener("change", function(ev){
+  var t = ev.target;
+  if (t.id === "sort"){ S.sortJobs = t.value; updateJobRows(); return; }
+  if (t.hasAttribute && t.hasAttribute("data-set")){
+    var v = t.type === "checkbox" ? t.checked : t.value;
+    if (t.hasAttribute("data-num")) v = Number(v);
+    saveSetting(t.getAttribute("data-set"), v);
+  }
+});
+document.addEventListener("focusout", function(ev){
+  var t = ev.target;
+  if (t && t.classList && t.classList.contains("note-ta")){ clearTimeout(noteTimers[t.getAttribute("data-id")]); saveNote(t.getAttribute("data-id"), t.value); }
+  setTimeout(function(){ if (pendingRender && !keepFocus()) render(); }, 0);
+});
+function showTip(el){
+  var fig = el.closest(".chart"); if (!fig) return;
+  var tip = fig.querySelector(".tip");
+  if (!tip){ tip = document.createElement("div"); tip.className = "tip"; tip.setAttribute("aria-hidden", "true"); fig.appendChild(tip); }
+  tip.textContent = el.getAttribute("data-tip"); tip.hidden = false;
+  var r = el.getBoundingClientRect(), fr = fig.getBoundingClientRect(), tw = tip.offsetWidth;
+  var cx = r.left + r.width / 2 - fr.left;
+  cx = Math.max(tw / 2, Math.min(fr.width - tw / 2, cx));
+  tip.style.left = cx + "px"; tip.style.top = (r.top + r.height / 2 - fr.top - 10) + "px";
+}
+function hideTip(el){ var fig = el.closest(".chart"), tip = fig && fig.querySelector(".tip"); if (tip) tip.hidden = true; }
+document.addEventListener("pointerover", function(ev){ var t = ev.target; if (t.classList && t.classList.contains("sp-hit")) showTip(t); });
+document.addEventListener("pointerout", function(ev){ var t = ev.target; if (t.classList && t.classList.contains("sp-hit")) hideTip(t); });
+document.addEventListener("focusin", function(ev){ var t = ev.target; if (t.classList && t.classList.contains("sp-hit")) showTip(t); });
+document.addEventListener("focusout", function(ev){ var t = ev.target; if (t.classList && t.classList.contains("sp-hit")) hideTip(t); });
+window.addEventListener("hashchange", function(){ visit++; render(); });
+
+/* ---------------------------------------------------------------- data */
+function boot(){
+  var c = window.claude;
+  if (!c || typeof c.use !== "function"){ S.fail = "nohost"; render(); return; }
+  var timer = setTimeout(function(){ S.slow = true; render(); }, 10000);
+  Promise.all([
+    c.use("db").catch(function(){ return null; }),
+    c.use("user").catch(function(){ return null; })
+  ]).then(function(res){
+    var db = res[0], user = res[1];
+    S.user = user;
+    if (!db){ clearTimeout(timer); S.fail = "signedout"; render(); return; }
+    S.db = db;
+    if (user){
+      user.me().then(function(me){ S.me = me; S.myId = me && me.id; schedule(); }, function(){});
+      user.can("data.write").then(function(v){ S.canWrite = v; schedule(); }, function(){});
+      user.canEdit().then(function(v){ S.canAdmin = !!v; schedule(); }, function(){});
+    }
+    function got(k){ S.got[k] = true; if (ready()){ clearTimeout(timer); S.slow = false; } schedule(); }
+    function fail(err){ clearTimeout(timer); S.fail = err && err.code === "revoked" ? "revoked" : "error"; render(); }
+    db.doc("workspace/meta").onSnapshot(function(s){ S.meta = s.exists ? s.data() : null; got("meta"); }, fail);
+    db.doc("workspace/settings").onSnapshot(function(s){ S.settings = s.exists ? s.data() : null; got("settings"); }, fail);
+    db.collection("jobs").onSnapshot(function(q){ S.jobs = q.docs.map(function(d){ return Object.assign({ _id: d.id }, d.data()); }); got("jobs"); }, fail);
+    var seen = null;
+    db.collection("escalations").onSnapshot(function(q){
+      S.escs = q.docs.map(function(d){ return Object.assign({ _id: d.id }, d.data()); });
+      if (seen) S.escs.forEach(function(e){
+        if (seen[e._id] || e.status !== "new") return;
+        var x = jobById(e.job); toast("New escalation: " + (x ? cname(x.j) : e.job) + ". " + (x && x.j.pm ? x.j.pm + " and you were texted." : ""), 4500);
+      });
+      seen = {}; S.escs.forEach(function(e){ seen[e._id] = true; });
+      got("escs");
+    }, fail);
+  });
+}
+/* Times on screen ("waiting 2h", "in 20 min") and the daily check's steps move with the clock. */
+setInterval(function(){ if (!document.hidden && ready() && !S.fail) schedule(); }, 30000);
+render();
+if (window.claude && typeof window.claude.use === "function") boot();
+else setTimeout(boot, 1500);   // a viewer that injects late still gets its chance
+})();
+</script>
+</body>
+</html>
