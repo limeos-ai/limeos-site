@@ -1,0 +1,42 @@
+# Publishes limeos.ai with GitHub Pages on every push to main.
+#
+# Pages serves the site for free only while this repo is public (see README).
+# Only the site's files go up. The Railway build files, the workflows, .gitignore
+# and the README stay out, the same set the Railway image leaves out.
+name: Publish to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Gather the site
+        run: |
+          mkdir _site
+          git archive HEAD | tar -x -C _site
+          cd _site
+          rm -rf .github .gitignore .dockerignore Caddyfile Dockerfile README.md
+          find . -type f | sort
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+      - id: deploy
+        uses: actions/deploy-pages@v5

@@ -1,4 +1,6 @@
-# Deploys limeos.ai to Railway on every push to main.
+# Deploys the site to Railway on every push to main. GitHub Pages serves limeos.ai
+# for now (pages.yml). This keeps the same site current on Railway, ready for the
+# domain to move there (see README).
 #
 # RAILWAY_TOKEN is a Railway *project* token for limeos-site / production: it can
 # deploy this project and nothing else. Railway builds the Dockerfile.
