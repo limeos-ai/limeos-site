@@ -1,0 +1,40 @@
+# Deploys limeos.ai to Railway on every push to main.
+#
+# RAILWAY_TOKEN is a Railway *project* token for limeos-site / production: it can
+# deploy this project and nothing else. Railway builds the Dockerfile.
+#
+# A push redeploys the limeos-site service only. www-redirect runs the same
+# image just for the Caddyfile's www -> limeos.ai redirect, so redeploy it by
+# hand when the Caddyfile changes: Actions > Deploy to Railway > Run workflow.
+name: Deploy to Railway
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      service:
+        description: Railway service to deploy
+        type: choice
+        options: [limeos-site, www-redirect]
+        default: limeos-site
+
+concurrency:
+  group: railway-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    container: ghcr.io/railwayapp/cli:4.33.0
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: railway up
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          SERVICE: ${{ inputs.service || 'limeos-site' }}
+          SUBJECT: ${{ github.event.head_commit.message || 'manual run' }}
+        run: |
+          railway up --ci --service "$SERVICE" \
+            --message "$(echo "$GITHUB_SHA" | cut -c1-7) $(printf '%s\n' "$SUBJECT" | head -n 1)"
